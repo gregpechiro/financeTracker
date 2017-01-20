@@ -6,6 +6,8 @@ type User struct {
 	Password    string `json:"password,omitempty" auth:"password"`
 	Active      bool   `json:"active" auth:"active"`
 	Role        string `json:"role,omitempty"`
+	FirstName   string `json:"firstName,omitempty"`
+	LastName    string `json:"lastName,omitempty"`
 	Created     int64  `json:"created,omitempty"`
 	LastSeen    int64  `json:"lastSeen,omitempty"`
 	Phone       string `json:"phone,omitempty"`
