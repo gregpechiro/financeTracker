@@ -40,14 +40,13 @@ var home = web.Route{"GET", "/", func(w http.ResponseWriter, r *http.Request) {
 
 var login = web.Route{"GET", "/login", func(w http.ResponseWriter, r *http.Request) {
 	tmpl.Render(w, r, "login.tmpl", nil)
+	return
 }}
 
 var loginPost = web.Route{"POST", "/login", func(w http.ResponseWriter, r *http.Request) {
 
 	email, pass := r.FormValue("email"), r.FormValue("password")
-
 	var user User
-
 	if !db.Auth("user", email, pass, &user) {
 		web.SetErrorRedirect(w, r, "/login", "Incorrect email or password")
 		return
@@ -57,7 +56,7 @@ var loginPost = web.Route{"POST", "/login", func(w http.ResponseWriter, r *http.
 	sess["id"] = user.Id
 	sess["email"] = user.Email
 
-	web.SetSuccessRedirect(w, r, "/account", "Welcome")
+	web.SetSuccessRedirect(w, r, "/account", "Welcome "+user.FirstName)
 	return
 
 }}
@@ -65,4 +64,5 @@ var loginPost = web.Route{"POST", "/login", func(w http.ResponseWriter, r *http.
 var logout = web.Route{"GET", "/logout", func(w http.ResponseWriter, r *http.Request) {
 	web.Logout(w)
 	web.SetSuccessRedirect(w, r, "/login", "Goodbye")
+	return
 }}

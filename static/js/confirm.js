@@ -1,5 +1,13 @@
-/*	confirm prompt example
+/*
+	confirm prompt example
     <a data-message="Are you sure you would like todo something?" data-color="#ff0000" data-url="/endpoint" data-type="warning">Delete</a>
+*/
+
+/*
+	conrirm action example
+	confirm.yes = function(btn) {
+        $('<form method="post" action="' + btn.attr('data-url') + '"></form>').submit();
+    }
 */
 
 function Confirm() {

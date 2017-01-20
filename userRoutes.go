@@ -8,4 +8,5 @@ import (
 
 var account = web.Route{"GET", "/account", func(w http.ResponseWriter, r *http.Request) {
 	tmpl.Render(w, r, "account.tmpl", nil)
+	return
 }}
