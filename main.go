@@ -15,14 +15,19 @@ var mux *web.Mux
 var db *adb.DB = adb.NewDB()
 
 func init() {
+	//stores
 	db.AddStore("user")
 	db.AddStore("transaction")
 	db.AddStore("category")
 
+	//session timeout length
 	web.SESSDUR = 15 * time.Minute
 	mux = web.NewMux()
 
+	//unsecured routes
 	mux.AddRoutes(home, login, logout, loginPost, register)
+
+	//secured routes
 	mux.AddSecureRoutes(USER, account)
 
 	tmpl = web.NewTmplCache()
@@ -45,22 +50,29 @@ var login = web.Route{"GET", "/login", func(w http.ResponseWriter, r *http.Reque
 
 var loginPost = web.Route{"POST", "/login", func(w http.ResponseWriter, r *http.Request) {
 	var user User
+	//parses form and throws it into a variable
 	r.ParseForm()
 	if errs, ok := web.FormToStruct(&user, r.Form, "login"); !ok {
 		web.SetFormErrors(w, errs)
 		web.SetErrorRedirect(w, r, "/login", "Error Loging In")
 		return
 	}
+
 	if !db.Auth("user", user.Email, user.Password, &user) {
 		web.SetErrorRedirect(w, r, "/login", "Incorrect email or password")
 		return
 	}
 
+	//assigns non parsed fields
 	sess := web.Login(w, r, user.Role)
 	sess.PutId(w, user.Id)
 	sess["email"] = user.Email
 	web.PutMultiSess(w, r, sess)
+
+	//updates lastseen
 	user.LastSeen = time.Now().Unix()
+
+	//saves to db
 	db.Set("user", user.Id, user)
 
 	web.SetSuccessRedirect(w, r, "/account", "Welcome "+user.FirstName)
@@ -70,6 +82,8 @@ var loginPost = web.Route{"POST", "/login", func(w http.ResponseWriter, r *http.
 
 var register = web.Route{"POST", "/register", func(w http.ResponseWriter, r *http.Request) {
 	var user User
+
+	//parses form and throws it into a variable
 	r.ParseForm()
 	if errs, ok := web.FormToStruct(&user, r.Form, "register"); !ok {
 		web.SetFormErrors(w, errs)
@@ -89,6 +103,7 @@ var register = web.Route{"POST", "/register", func(w http.ResponseWriter, r *htt
 	user.Role = "USER"
 	user.Created = time.Now().Unix()
 	user.Primary = true
+	user.AccountId = genId()
 
 	if !db.Add("user", user.Id, user) {
 		web.SetErrorRedirect(w, r, "/login", "Error Registering, Please try again")

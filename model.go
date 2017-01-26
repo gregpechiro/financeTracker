@@ -19,10 +19,10 @@ type User struct {
 type Transaction struct {
 	Id          string `json:"id"`
 	UserId      string `json:"userId"`
-	Title       string `json:"title,omitempty"`
-	Description string `json:"description,omitempty"`
-	Category    string `json:"category,omitempty"`
-	Amount      int    `json:"amoun,omitemptyt"`
+	Title       string `json:"title,omitempty" required:"transcation"`
+	Description string `json:"description,omitempty" required:"transcation"`
+	Category    string `json:"category,omitempty" required:"transcation"`
+	Amount      int    `json:"amoun,omitemptyt" required:"transcation"`
 	Date        int64  `json:"date,omitempty"`
 	AccountId   string `json:"accountId,omitempty"`
 }
