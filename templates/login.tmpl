@@ -47,7 +47,8 @@
                                 <div class="form-group">
                                     <label class="control-label col-xs-4">Password</label>
                                     <div class="col-xs-8">
-                                        <input class="form-control" type="password" name="password">
+                                        <span id="capsWarn" class="text-danger hide">Caps Lock is On</span>
+                                        <input id="password" class="form-control" type="password" name="password">
                                     </div>
                                 </div>
                                 <button class="btn btn-primary btn-block">Login</button>
@@ -102,6 +103,8 @@
         </div>
 
         {{ template "scripts.tmpl" . }}
+
+        <script src="/static/js/caps.js" charset="utf-8"></script>
 
     </body>
 </html>
