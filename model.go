@@ -22,7 +22,7 @@ type Transaction struct {
 	Title       string `json:"title,omitempty" required:"transcation"`
 	Description string `json:"description,omitempty" required:"transcation"`
 	Category    string `json:"category,omitempty" required:"transcation"`
-	Amount      int    `json:"amoun,omitemptyt" required:"transcation"`
+	Amount      int    `json:"amount,omitemptyt" required:"transcation"`
 	Date        int64  `json:"date,omitempty"`
 	AccountId   string `json:"accountId,omitempty"`
 }
