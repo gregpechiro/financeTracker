@@ -28,7 +28,7 @@ func init() {
 	mux.AddRoutes(home, login, logout, loginPost, register)
 
 	//secured routes
-	mux.AddSecureRoutes(USER, account)
+	mux.AddSecureRoutes(USER, account, transactionSave)
 
 	tmpl = web.NewTmplCache()
 }
