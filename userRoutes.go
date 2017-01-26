@@ -69,4 +69,5 @@ var transactionSave = web.Route{"POST", "/transactionSave", func(w http.Response
 		return
 	}
 	web.SetSuccessRedirect(w, r, "/account", "Transaction Added")
+
 }}

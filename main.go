@@ -91,6 +91,7 @@ var register = web.Route{"POST", "/register", func(w http.ResponseWriter, r *htt
 		return
 	}
 
+	//error checks for a user that already exists
 	var users []User
 	db.TestQuery("user", &users, adb.Eq("email", user.Email), adb.Ne("id", `"`+user.Id+`"`))
 	if len(users) > 0 {
@@ -98,6 +99,7 @@ var register = web.Route{"POST", "/register", func(w http.ResponseWriter, r *htt
 		return
 	}
 
+	//assign non parsed fields
 	user.Id = genId()
 	user.Active = true
 	user.Role = "USER"
@@ -105,6 +107,7 @@ var register = web.Route{"POST", "/register", func(w http.ResponseWriter, r *htt
 	user.Primary = true
 	user.AccountId = genId()
 
+	//save to db with err check
 	if !db.Add("user", user.Id, user) {
 		web.SetErrorRedirect(w, r, "/login", "Error Registering, Please try again")
 		return
@@ -115,6 +118,7 @@ var register = web.Route{"POST", "/register", func(w http.ResponseWriter, r *htt
 }}
 
 var logout = web.Route{"GET", "/logout", func(w http.ResponseWriter, r *http.Request) {
+	//logout
 	web.Logout(w)
 	web.SetSuccessRedirect(w, r, "/login", "Goodbye")
 	return
