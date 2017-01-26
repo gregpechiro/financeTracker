@@ -7,6 +7,18 @@ import (
 )
 
 var account = web.Route{"GET", "/account", func(w http.ResponseWriter, r *http.Request) {
-	tmpl.Render(w, r, "account.tmpl", nil)
+	id := web.GetId(r)
+	var user User
+
+	if !db.Get("user", id, &user) {
+		web.Logout(w)
+		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
+		return
+	}
+
+	tmpl.Render(w, r, "account.tmpl", web.Model{
+		"user": user,
+	})
+
 	return
 }}

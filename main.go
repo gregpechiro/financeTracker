@@ -44,7 +44,6 @@ var login = web.Route{"GET", "/login", func(w http.ResponseWriter, r *http.Reque
 }}
 
 var loginPost = web.Route{"POST", "/login", func(w http.ResponseWriter, r *http.Request) {
-
 	email, pass := r.FormValue("email"), r.FormValue("password")
 	var user User
 	if !db.Auth("user", email, pass, &user) {
@@ -53,9 +52,9 @@ var loginPost = web.Route{"POST", "/login", func(w http.ResponseWriter, r *http.
 	}
 
 	sess := web.Login(w, r, user.Role)
-	sess["id"] = user.Id
+	sess.PutId(w, user.Id)
 	sess["email"] = user.Email
-
+	web.PutMultiSess(w, r, sess)
 	web.SetSuccessRedirect(w, r, "/account", "Welcome "+user.FirstName)
 	return
 
