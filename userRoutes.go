@@ -25,12 +25,41 @@ var account = web.Route{"GET", "/account", func(w http.ResponseWriter, r *http.R
 	db.TestQuery("transaction", &transactions, adb.Eq("accountId", `"`+user.AccountId+`"`))
 
 	//gets all categories for an account
-	var categories []Category
-	db.TestQuery("category", &categories, adb.Eq("accountId", `"`+user.AccountId+`"`))
+	var budgetItems []BudgetItem
+	db.TestQuery("budgetItems", &budgetItems, adb.Eq("accountId", `"`+user.AccountId+`"`))
 
 	tmpl.Render(w, r, "account.tmpl", web.Model{
 		"transactions": transactions,
-		"categories":   categories,
+		"budgetItems":  budgetItems,
+		"user":         user,
+	})
+
+	return
+}}
+
+var budget = web.Route{"GET", "/budget", func(w http.ResponseWriter, r *http.Request) {
+
+	id := web.GetId(r)
+	var user User
+
+	//gets user and double checks that the user exists still
+	if !db.Get("user", id, &user) {
+		web.Logout(w)
+		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
+		return
+	}
+
+	//gets all transactions for an account
+	var budgetGroups []BudgetGroup
+	db.TestQuery("budgetGroups", &budgetGroups, adb.Eq("accountId", `"`+user.AccountId+`"`))
+
+	//gets all categories for an account
+	var budgetItems []BudgetItem
+	db.TestQuery("budgetItems", &budgetItems, adb.Eq("accountId", `"`+user.AccountId+`"`))
+
+	tmpl.Render(w, r, "budget.tmpl", web.Model{
+		"budgetGroups": budgetGroups,
+		"budgetItems":  budgetItems,
 		"user":         user,
 	})
 
@@ -89,7 +118,7 @@ var budgetItemSave = web.Route{"POST", "/budgetItem", func(w http.ResponseWriter
 	r.ParseForm()
 	if errs, ok := web.FormToStruct(&budgetItem, r.Form, "budgetItem"); !ok {
 		web.SetFormErrors(w, errs)
-		web.SetErrorRedirect(w, r, "/account", "Error saving budget item")
+		web.SetErrorRedirect(w, r, "/budget", "Error saving budget item")
 		return
 	}
 	//assign non parsed fields
@@ -98,15 +127,11 @@ var budgetItemSave = web.Route{"POST", "/budgetItem", func(w http.ResponseWriter
 
 	//save to db with err check
 	if !db.Add("budgetItem", budgetItem.Id, budgetItem) {
-		web.SetErrorRedirect(w, r, "/account", "Error saving budget item")
+		web.SetErrorRedirect(w, r, "/budget", "Error saving budget item")
 		return
 	}
-	web.SetSuccessRedirect(w, r, "/account", "Budget Item Added")
+	web.SetSuccessRedirect(w, r, "/budget", "Budget Item Added")
 
-}}
-
-var budgetItemPage = web.Route{"GET", "/budgetItem", func(w http.ResponseWriter, r *http.Request) {
-	tmpl.Render(w, r, "/budgetItems", nil)
 }}
 
 var budgetGroupSave = web.Route{"POST", "/budgetGroup", func(w http.ResponseWriter, r *http.Request) {
@@ -126,7 +151,7 @@ var budgetGroupSave = web.Route{"POST", "/budgetGroup", func(w http.ResponseWrit
 	r.ParseForm()
 	if errs, ok := web.FormToStruct(&budgetGroup, r.Form, "budgetGroup"); !ok {
 		web.SetFormErrors(w, errs)
-		web.SetErrorRedirect(w, r, "/account", "Error saving budget group")
+		web.SetErrorRedirect(w, r, "/budget", "Error saving budget group")
 		return
 	}
 	//assign non parsed fields
@@ -135,13 +160,9 @@ var budgetGroupSave = web.Route{"POST", "/budgetGroup", func(w http.ResponseWrit
 
 	//save to db with err check
 	if !db.Add("budgetGroup", budgetGroup.Id, budgetGroup) {
-		web.SetErrorRedirect(w, r, "/account", "Error saving budget group")
+		web.SetErrorRedirect(w, r, "/budget", "Error saving budget group")
 		return
 	}
-	web.SetSuccessRedirect(w, r, "/account", "Budget Group Added")
+	web.SetSuccessRedirect(w, r, "/budget", "Budget Group Added")
 
-}}
-
-var budgetGroupPage = web.Route{"GET", "/budgetGroup", func(w http.ResponseWriter, r *http.Request) {
-	tmpl.Render(w, r, "/budgetGroups", nil)
 }}

@@ -17,26 +17,28 @@ type User struct {
 }
 
 type Transaction struct {
-	Id          string `json:"id"`
-	UserId      string `json:"userId"`
-	Title       string `json:"title,omitempty" required:"transcation"`
-	Description string `json:"description,omitempty" required:"transcation"`
-	BudgetItem  string `json:"budgetItem,omitempty" required:"transcation"`
-	Amount      int    `json:"amount,omitempty" required:"transcation"`
-	Date        int64  `json:"date,omitempty"`
-	AccountId   string `json:"accountId,omitempty"`
+	Id            string `json:"id"`
+	UserId        string `json:"userId"`
+	Title         string `json:"title,omitempty" required:"transaction"`
+	Description   string `json:"description,omitempty" required:"transaction"`
+	BudgetItem    string `json:"budgetItem,omitempty" required:"transaction"`
+	Amount        int    `json:"amount,omitempty" required:"transaction"`
+	Date          int64  `json:"date,omitempty"`
+	AccountId     string `json:"accountId,omitempty"`
+	BudgetItemId  string `json:"budgetItemId"`
+	BudgetGroupId string `json:"budgetGroupId"`
 }
 
 type BudgetItem struct {
-	Id        string `json:"id"`
-	AccountId string `json:"accountId"`
-	Title     string `json:"title,omitemtpy" required:"item"`
-	Planned   string `json:"planned,omitempty" required:"item"`
+	Id            string `json:"id"`
+	BudgetGroupId string `json:"budgetGroupId"`
+	AccountId     string `json:"accountId"`
+	Title         string `json:"title,omitemtpy" required:"item"`
+	Planned       string `json:"planned,omitempty" required:"item"`
 }
 
 type BudgetGroup struct {
-	Id          string       `json:"id"`
-	AccountId   string       `json:"accountId"`
-	Title       string       `json:"title,omitemtpy" required:"group"`
-	BudgetItems []BudgetItem `json:"budgetItems,omitempty"`
+	Id        string `json:"id"`
+	AccountId string `json:"accountId"`
+	Title     string `json:"title,omitemtpy" required:"group"`
 }
