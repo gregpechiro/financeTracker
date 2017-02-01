@@ -37,7 +37,7 @@ var account = web.Route{"GET", "/account", func(w http.ResponseWriter, r *http.R
 	return
 }}
 
-var transactionSave = web.Route{"POST", "/transactionSave", func(w http.ResponseWriter, r *http.Request) {
+var transactionSave = web.Route{"POST", "/transaction", func(w http.ResponseWriter, r *http.Request) {
 
 	id := web.GetId(r)
 	var user User
@@ -70,4 +70,78 @@ var transactionSave = web.Route{"POST", "/transactionSave", func(w http.Response
 	}
 	web.SetSuccessRedirect(w, r, "/account", "Transaction Added")
 
+}}
+
+var budgetItemSave = web.Route{"POST", "/budgetItem", func(w http.ResponseWriter, r *http.Request) {
+
+	id := web.GetId(r)
+	var user User
+
+	//gets user and double checks that the user exists still
+	if !db.Get("user", id, &user) {
+		web.Logout(w)
+		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
+		return
+	}
+
+	//parses form and throws it into a variable
+	var budgetItem BudgetItem
+	r.ParseForm()
+	if errs, ok := web.FormToStruct(&budgetItem, r.Form, "budgetItem"); !ok {
+		web.SetFormErrors(w, errs)
+		web.SetErrorRedirect(w, r, "/account", "Error saving budget item")
+		return
+	}
+	//assign non parsed fields
+	budgetItem.Id = genId()
+	budgetItem.AccountId = user.AccountId
+
+	//save to db with err check
+	if !db.Add("budgetItem", budgetItem.Id, budgetItem) {
+		web.SetErrorRedirect(w, r, "/account", "Error saving budget item")
+		return
+	}
+	web.SetSuccessRedirect(w, r, "/account", "Budget Item Added")
+
+}}
+
+var budgetItemPage = web.Route{"GET", "/budgetItem", func(w http.ResponseWriter, r *http.Request) {
+	tmpl.Render(w, r, "/budgetItems", nil)
+}}
+
+var budgetGroupSave = web.Route{"POST", "/budgetGroup", func(w http.ResponseWriter, r *http.Request) {
+
+	id := web.GetId(r)
+	var user User
+
+	//gets user and double checks that the user exists still
+	if !db.Get("user", id, &user) {
+		web.Logout(w)
+		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
+		return
+	}
+
+	//parses form and throws it into a variable
+	var budgetGroup BudgetGroup
+	r.ParseForm()
+	if errs, ok := web.FormToStruct(&budgetGroup, r.Form, "budgetGroup"); !ok {
+		web.SetFormErrors(w, errs)
+		web.SetErrorRedirect(w, r, "/account", "Error saving budget group")
+		return
+	}
+	//assign non parsed fields
+	budgetGroup.Id = genId()
+	budgetGroup.AccountId = user.AccountId
+
+	//save to db with err check
+	if !db.Add("budgetGroup", budgetGroup.Id, budgetGroup) {
+		web.SetErrorRedirect(w, r, "/account", "Error saving budget group")
+		return
+	}
+	web.SetSuccessRedirect(w, r, "/account", "Budget Group Added")
+
+}}
+
+var budgetGroupPage = web.Route{"GET", "/budgetGroup", func(w http.ResponseWriter, r *http.Request) {
+	tmpl.Render(w, r, "/budgetGroups", nil)
 }}
