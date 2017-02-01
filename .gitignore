@@ -26,3 +26,4 @@ _testmain.go
 financeTracker
 db/
 .tern-project
+.floo
