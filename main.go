@@ -18,7 +18,8 @@ func init() {
 	//stores
 	db.AddStore("user")
 	db.AddStore("transaction")
-	db.AddStore("category")
+	db.AddStore("budgetItem")
+	db.AddStore("budgetGroup")
 
 	//session timeout length
 	web.SESSDUR = 15 * time.Minute
@@ -28,7 +29,7 @@ func init() {
 	mux.AddRoutes(home, login, logout, loginPost, register)
 
 	//secured routes
-	mux.AddSecureRoutes(USER, account, transactionSave)
+	mux.AddSecureRoutes(USER, account, budgetItemSave, budgetGroupSave, budgetGroupPage, budgetItemPage)
 
 	tmpl = web.NewTmplCache()
 }

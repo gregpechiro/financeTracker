@@ -21,14 +21,22 @@ type Transaction struct {
 	UserId      string `json:"userId"`
 	Title       string `json:"title,omitempty" required:"transcation"`
 	Description string `json:"description,omitempty" required:"transcation"`
-	Category    string `json:"category,omitempty" required:"transcation"`
-	Amount      int    `json:"amount,omitemptyt" required:"transcation"`
+	BudgetItem  string `json:"budgetItem,omitempty" required:"transcation"`
+	Amount      int    `json:"amount,omitempty" required:"transcation"`
 	Date        int64  `json:"date,omitempty"`
 	AccountId   string `json:"accountId,omitempty"`
 }
 
-type Category struct {
+type BudgetItem struct {
 	Id        string `json:"id"`
 	AccountId string `json:"accountId"`
-	Title     string `json:"title,omitemtpy"`
+	Title     string `json:"title,omitemtpy" required:"item"`
+	Planned   string `json:"planned,omitempty" required:"item"`
+}
+
+type BudgetGroup struct {
+	Id          string       `json:"id"`
+	AccountId   string       `json:"accountId"`
+	Title       string       `json:"title,omitemtpy" required:"group"`
+	BudgetItems []BudgetItem `json:"budgetItems,omitempty"`
 }
