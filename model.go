@@ -1,5 +1,7 @@
 package main
 
+import "github.com/cagnosolutions/adb"
+
 type User struct {
 	Id          string `json:"id"`
 	Email       string `json:"email,omitempty" auth:"username" required:"register, login"`
@@ -41,4 +43,26 @@ type BudgetGroup struct {
 	Id        string `json:"id"`
 	AccountId string `json:"accountId"`
 	Title     string `json:"title,omitemtpy" required:"group"`
+}
+
+type Category struct {
+	Group BudgetGroup
+	Items []BudgetItem
+}
+
+func getCategories(accountId string) []Category {
+	var budgetGroups []BudgetGroup
+	var categories []Category
+	db.TestQuery("budgetGroup", &budgetGroups, adb.Eq("accountId", `"`+accountId+`"`))
+
+	for _, g := range budgetGroups {
+		var category Category
+		var budgetItems []BudgetItem
+		db.TestQuery("budgetItem", &budgetItems, adb.Eq("budgetGroupId", `"`+g.Id+`"`))
+		category.Group = g
+		category.Items = budgetItems
+		categories = append(categories, category)
+	}
+	return categories
+
 }
