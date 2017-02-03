@@ -25,12 +25,12 @@ var account = web.Route{"GET", "/account", func(w http.ResponseWriter, r *http.R
 	db.TestQuery("transaction", &transactions, adb.Eq("accountId", `"`+user.AccountId+`"`))
 
 	//gets all categories for an account
-	var budgetItems []BudgetItem
-	db.TestQuery("budgetItems", &budgetItems, adb.Eq("accountId", `"`+user.AccountId+`"`))
+	/*var budgetItems []BudgetItem
+	db.TestQuery("budgetItems", &budgetItems, adb.Eq("accountId", `"`+user.AccountId+`"`))*/
 
 	tmpl.Render(w, r, "account.tmpl", web.Model{
 		"transactions": transactions,
-		"budgetItems":  budgetItems,
+		"categories":   getCategories(user.AccountId),
 		"user":         user,
 	})
 
@@ -50,17 +50,16 @@ var budget = web.Route{"GET", "/budget", func(w http.ResponseWriter, r *http.Req
 	}
 
 	// gets all budgetGroups for an account
-	var budgetGroups []BudgetGroup
-	db.TestQuery("budgetGroup", &budgetGroups, adb.Eq("accountId", `"`+user.AccountId+`"`))
+	/*var budgetGroups []BudgetGroup
+	db.TestQuery("budgetGroup", &budgetGroups, adb.Eq("accountId", `"`+user.AccountId+`"`))*/
 
 	// gets all budgetItems for an account
-	var budgetItems []BudgetItem
-	db.TestQuery("budgetItem", &budgetItems, adb.Eq("accountId", `"`+user.AccountId+`"`))
+	/*var budgetItems []BudgetItem
+	db.TestQuery("budgetItem", &budgetItems, adb.Eq("accountId", `"`+user.AccountId+`"`))*/
 
 	tmpl.Render(w, r, "budget.tmpl", web.Model{
-		"budgetGroups": budgetGroups,
-		"budgetItems":  budgetItems,
-		"user":         user,
+		"categories": getCategories(user.AccountId),
+		"user":       user,
 	})
 
 	return
