@@ -114,15 +114,15 @@ var budgetItemSave = web.Route{"POST", "/budgetItem", func(w http.ResponseWriter
 
 	// parses form and throws it into a variable
 	var budgetItem BudgetItem
-	r.ParseForm()
-	if errs, ok := web.FormToStruct(&budgetItem, r.Form, "budgetItem"); !ok {
-		web.SetFormErrors(w, errs)
+	if r.FormValue("title") == "" {
 		web.SetErrorRedirect(w, r, "/budget", "Error saving budget item")
 		return
 	}
 	// assign non parsed fields
 	budgetItem.Id = genId()
 	budgetItem.AccountId = user.AccountId
+
+	budgetItem.Title = r.FormValue("title")
 
 	// save to db with err check
 	if !db.Add("budgetItem", budgetItem.Id, budgetItem) {
@@ -163,5 +163,68 @@ var budgetGroupSave = web.Route{"POST", "/budgetGroup", func(w http.ResponseWrit
 		return
 	}
 	web.SetSuccessRedirect(w, r, "/budget", "Budget Group Added")
+
+}}
+
+var budgetGroupDel = web.Route{"POST", "/budgetGroup/:id/del", func(w http.ResponseWriter, r *http.Request) {
+
+	var budgetGroup BudgetGroup
+	var budgetItems []BudgetItem
+
+	id := web.GetId(r)
+	var user User
+
+	// gets user and double checks that the user exists still
+	if !db.Get("user", id, &user) {
+		web.Logout(w)
+		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
+		return
+	}
+
+	db.Get("budgetGroup", r.FormValue(":id"), &budgetGroup)
+
+	if user.AccountId != budgetGroup.AccountId {
+		web.SetErrorRedirect(w, r, "/budget", "Error deleting, Please try again")
+		return
+	}
+	db.TestQuery("budgetItems", &budgetItems, adb.Eq("budgetGroupId", `"`+budgetGroup.Id+`"`))
+
+	for _, item := range budgetItems {
+		db.Del("budgetItem", item.Id)
+	}
+
+	db.Del("budgetGroup", budgetGroup.Id)
+
+	web.SetSuccessRedirect(w, r, "/budget", "Budget Group Deleted")
+
+	return
+
+}}
+
+var budgetItemDel = web.Route{"POST", "/budgetItem/:id/del", func(w http.ResponseWriter, r *http.Request) {
+
+	id := web.GetId(r)
+	var user User
+	var budgetItem BudgetItem
+
+	// gets user and double checks that the user exists still
+	if !db.Get("user", id, &user) {
+		web.Logout(w)
+		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
+		return
+	}
+
+	db.Get("budgetItem", r.FormValue(":id"), &budgetItem)
+
+	if user.AccountId != budgetItem.AccountId {
+		web.SetErrorRedirect(w, r, "/budget", "Error deleting budget item, Please try again")
+		return
+	}
+
+	db.Del("budgetItem", budgetItem.Id)
+
+	web.SetSuccessRedirect(w, r, "/budget", "Budget Item Deleted")
+
+	return
 
 }}
