@@ -105,6 +105,8 @@
 
         {{ template "scripts.tmpl" . }}
 
+        {{ template "session.tmpl" . }}
+
         <script type="text/javascript">
             $('button.subcategory').click(function() {
                 $('input#budgetGroupId').val($(this).attr('data-group-id'));

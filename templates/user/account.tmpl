@@ -85,6 +85,19 @@
                                     <input class="form-control" type="text" name="ammount">
                                 </div>
                             </div>
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label">Category</label>
+                                <div class="col-xs-8">
+                                    <select id="budgetItemId" class="form-control" name="budgetItemId">
+                                        {{ range $category := .categories }}
+                                            {{ range $sub := $category.Items }}
+                                                <option value="{{ $sub.Id }}">{{ $category.Group.Title }} - {{ $sub.Title }}</option>
+                                            {{ end  }}
+                                        {{ end }}
+                                    </select>
+                                </div>
+                                <input id="budgetGroupId" type="hidden" name="budgetGroupId" value="">
+                            </div>
                             <button class="btn btn-success btn-block">Save</button>
                         </form>
                     </div>
@@ -93,6 +106,8 @@
         </div>
 
         {{ template "scripts.tmpl" . }}
+
+        {{ template "session.tmpl" . }}
 
         <script src="//cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js" charset="utf-8"></script>
         <script src="/static/js/datatables-bootstrap.js" charset="utf-8"></script>
