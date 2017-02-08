@@ -3,7 +3,7 @@
     <head>
         {{ template "head.tmpl" . }}
 
-        <title>Budget</title>
+        <title>Category</title>
 
         <style media="screen">
             .list-group {
@@ -32,7 +32,11 @@
                                             <a role="button" data-toggle="collapse" data-parent="#categories" href="#category-{{ $i }}" aria-expanded="true" aria-controls="collapseOne">
                                                 {{ $category.Group.Title }}
                                             </a>
-                                            <button class="btn btn-xs btn-default pull-right subcategory" data-group-id="{{ $category.Group.Id }}">Add Subcategory</button>
+                                            <div class="btn-group btn-group-xs pull-right">
+                                                <button class="btn btn-xs btn-default subcategory" data-group-id="{{ $category.Group.Id }}">Add Subcategory</button>
+                                                <button class="btn btn-warning">Rename</button>
+                                                <button class="btn btn-danger">Delete</button>
+                                            </div>
                                         </h4>
                                     </div>
                                     <div id="category-{{ $i }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
@@ -40,7 +44,13 @@
                                             {{ if $category.Items }}
                                                 <ul class="list-group">
                                                     {{ range $sub := $category.Items }}
-                                                        <li class="list-group-item">{{ $sub.Title }}</li>
+                                                        <li class="list-group-item">
+                                                            {{ $sub.Title }}
+                                                            <div class="btn-group btn-group-xs pull-right">
+                                                                <button class="btn btn-warning">Rename</button>
+                                                                <button class="btn btn-danger">Delete</button>
+                                                            </div>
+                                                        </li>
                                                     {{ end }}
                                                 </ul>
                                             {{ else }}
