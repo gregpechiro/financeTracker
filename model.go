@@ -36,7 +36,7 @@ type BudgetItem struct {
 	BudgetGroupId string `json:"budgetGroupId"`
 	AccountId     string `json:"accountId"`
 	Title         string `json:"title,omitemtpy" required:"item"`
-	Planned       string `json:"planned,omitempty" required:"item"`
+	Planned       string `json:"planned,omitempty"`
 }
 
 type BudgetGroup struct {

@@ -2,8 +2,14 @@
 <html>
     <head>
         {{ template "head.tmpl" . }}
-        <link rel="stylesheet" href="//cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css">
+
         <title>Budget</title>
+
+        <style media="screen">
+            .list-group {
+                margin-bottom: 0;
+            }
+        </style>
 
     </head>
     <body>
@@ -17,20 +23,29 @@
                         Categories
                         <button class="btn btn-default btn-xs pull-right" data-toggle="modal" data-target="#budgetGroupModal">Add Category</button>
                     </legend>
-                    {{ if .budgetGroups }}
+                    {{ if .categories }}
                         <div class="panel-group" id="categories" role="tablist" aria-multiselectable="true">
-                            {{ range $i, $group := .budgetGroups }}
+                            {{ range $i, $category := .categories }}
                                 <div class="panel panel-default">
-                                    <div class="panel-heading" role="tab" id="headingOne">
-                                        <h4 class="panel-title">
+                                    <div class="panel-heading clearfix" role="tab" id="headingOne">
+                                        <h4 class="panel-title clearfix">
                                             <a role="button" data-toggle="collapse" data-parent="#categories" href="#category-{{ $i }}" aria-expanded="true" aria-controls="collapseOne">
-                                                {{ $group.Title }}
+                                                {{ $category.Group.Title }}
                                             </a>
+                                            <button class="btn btn-xs btn-default pull-right subcategory" data-group-id="{{ $category.Group.Id }}">Add Subcategory</button>
                                         </h4>
                                     </div>
                                     <div id="category-{{ $i }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
                                         <div class="panel-body">
-                                            Sub categories
+                                            {{ if $category.Items }}
+                                                <ul class="list-group">
+                                                    {{ range $sub := $category.Items }}
+                                                        <li class="list-group-item">{{ $sub.Title }}</li>
+                                                    {{ end }}
+                                                </ul>
+                                            {{ else }}
+                                                No Subcategories
+                                            {{ end }}
                                         </div>
                                     </div>
                                 </div>
@@ -65,11 +80,37 @@
             </div>
         </div>
 
+        <div class="modal fade" id="budgetItemModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-sm" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Add Subcategory</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form-horizontal" action="/budgetItem" method="post">
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label">Title</label>
+                                <div class="col-xs-8">
+                                    <input class="form-control" type="text" name="title">
+                                </div>
+                            </div>
+                            <input id="budgetGroupId" type="hidden" name="budgetGroupId" value="">
+                            <button class="btn btn-success btn-block">Save</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{ template "scripts.tmpl" . }}
 
-        <script src="//cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js" charset="utf-8"></script>
-        <script src="/static/js/datatables-bootstrap.js" charset="utf-8"></script>
-        <script src="/static/js/datatables-custom.js" charset="utf-8"></script>
+        <script type="text/javascript">
+            $('button.subcategory').click(function() {
+                $('input#budgetGroupId').val($(this).attr('data-group-id'));
+                $('div#budgetItemModal').modal('show');
+            });
+        </script>
 
     </body>
 </html>

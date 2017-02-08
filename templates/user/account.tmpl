@@ -2,7 +2,10 @@
 <html>
     <head>
         {{ template "head.tmpl" . }}
-        <link rel="stylesheet" href="//cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css">
+
+        <link rel="stylesheet" href="/static/css/datatables-bootstrap.css">
+        <link rel="stylesheet" href="/static/css/datatables-custom.css">
+
         <title>Account</title>
 
     </head>
@@ -12,43 +15,41 @@
 
         <div class="container">
             <div class="row">
-                <div class="col-lg-12 col-xl-12 text-center">
-                    <h1>Account Page</h1>
+                <div class="col-lg-12 col-xl-12">
                     <div class="panel panel-default">
                         <div class="panel-heading clearfix">
                             Recent Transactions
                             <button class="btn btn-xs btn-default pull-right" data-toggle="modal" data-target="#transactionModal">Add</button>
                         </div>
                         {{ if .transactions }}
-                            <table id="transactions" class="table table-bordered table-hover" width="100%">
-                                <thead>
-                                    <tr id="search">
-                                        <th>title</th>
-                                        <th>description</th>
-                                        <th>category</th>
-                                        <th>amount</th>
-                                        <th>date</th>
-                                    </tr>
-                                    <tr>
-                                        <th>Title</th>
-                                        <th>Description</th>
-                                        <th>Category</th>
-                                        <th>Amount</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {{ range $transaction := .transactions }}
-                                        <tr>
-                                            <th>{{ $transaction.Title }}</th>
-                                            <th>{{ $transaction.Description }}</th>
-                                            <th>{{ $transaction.Category }}</th>
-                                            <th>{{ $transaction.Amount }}</th>
-                                            <th>{{ $transaction.Date }}</th>
+                            <div class="panel-body">
+                                <table id="transactions" class="table table-bordered table-hover" width="100%">
+                                    <thead>
+                                        <tr id="search">
+                                            <th>title</th>
+                                            <th>description</th>
+                                            <th>amount</th>
+                                            <th>date</th>
                                         </tr>
-                                    {{ end }}
-                                </tbody>
-                            </table>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Description</th>
+                                            <th>Amount</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{ range $transaction := .transactions }}
+                                            <tr>
+                                                <td>{{ $transaction.Title }}</td>
+                                                <td>{{ $transaction.Description }}</td>
+                                                <td>{{ $transaction.Amount }}</td>
+                                                <td>{{ $transaction.Date }}</td>
+                                            </tr>
+                                        {{ end }}
+                                    </tbody>
+                                </table>
+                            </div>
                         {{ else }}
                             No recent transactions
                         {{ end }}
@@ -79,12 +80,6 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="col-xs-4 control-label">Category</label>
-                                <div class="col-xs-8">
-                                    <input class="form-control" type="text" name="category">
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-xs-4 control-label">Ammount</label>
                                 <div class="col-xs-8">
                                     <input class="form-control" type="text" name="ammount">
@@ -111,9 +106,8 @@
                     "columnDefs": [
                         { "name": "title",     "targets": 0 },
                         { "name": "description",  "targets": 1 },
-                        { "name": "category",    "targets": 2 },
-                        { "name": "amount",    "targets": 3 },
-                        { "name": "date",      "targets": 4 }
+                        { "name": "amount",    "targets": 2 },
+                        { "name": "date",      "targets": 3 }
                     ]
                 });
 
