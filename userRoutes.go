@@ -112,16 +112,16 @@ var budgetItemSave = web.Route{"POST", "/budgetItem", func(w http.ResponseWriter
 		return
 	}
 
-	// parses form and throws it into a variable
+	// err check for empty formvalue
 	var budgetItem BudgetItem
 	if r.FormValue("title") == "" {
 		web.SetErrorRedirect(w, r, "/budget", "Error saving budget item")
 		return
 	}
-	// assign non parsed fields
+	// assign fields
 	budgetItem.Id = genId()
 	budgetItem.AccountId = user.AccountId
-
+	budgetItem.BudgetGroupId = r.FormValue("budgetGroupId")
 	budgetItem.Title = r.FormValue("title")
 
 	// save to db with err check
