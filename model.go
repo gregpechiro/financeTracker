@@ -27,42 +27,42 @@ type Transaction struct {
 	Amount        int    `json:"amount,omitempty" required:"transaction"`
 	Date          int64  `json:"date,omitempty"`
 	AccountId     string `json:"accountId,omitempty"`
-	BudgetItemId  string `json:"budgetItemId"`
-	BudgetGroupId string `json:"budgetGroupId"`
+	SubcategoryId string `json:"subcategoryId"`
+	CategoryId    string `json:"categoryId"`
 }
 
-type BudgetItem struct {
-	Id            string `json:"id"`
-	BudgetGroupId string `json:"budgetGroupId"`
-	AccountId     string `json:"accountId"`
-	Title         string `json:"title,omitemtpy" required:"item"`
-	Planned       string `json:"planned,omitempty"`
+type Subcategory struct {
+	Id         string `json:"id"`
+	CategoryId string `json:"categoryId"`
+	AccountId  string `json:"accountId"`
+	Title      string `json:"title,omitemtpy" required:"item"`
+	Planned    string `json:"planned,omitempty"`
 }
 
-type BudgetGroup struct {
+type Category struct {
 	Id        string `json:"id"`
 	AccountId string `json:"accountId"`
 	Title     string `json:"title,omitemtpy" required:"group"`
 }
 
-type Category struct {
-	Group BudgetGroup
-	Items []BudgetItem
+type CategoryView struct {
+	Group Category
+	Items []Subcategory
 }
 
-func getCategories(accountId string) []Category {
-	var budgetGroups []BudgetGroup
+func getCategoryView(accountId string) []CategoryView {
 	var categories []Category
-	db.TestQuery("budgetGroup", &budgetGroups, adb.Eq("accountId", `"`+accountId+`"`))
+	var categoryViews []CategoryView
+	db.TestQuery("category", &categories, adb.Eq("accountId", `"`+accountId+`"`))
 
-	for _, g := range budgetGroups {
-		var category Category
-		var budgetItems []BudgetItem
-		db.TestQuery("budgetItem", &budgetItems, adb.Eq("budgetGroupId", `"`+g.Id+`"`))
-		category.Group = g
-		category.Items = budgetItems
-		categories = append(categories, category)
+	for _, g := range categories {
+		var categoryView CategoryView
+		var subcategory []Subcategory
+		db.TestQuery("subcategory", &subcategory, adb.Eq("subcategoryId", `"`+g.Id+`"`))
+		categoryView.Group = g
+		categoryView.Items = subcategory
+		categoryViews = append(categoryViews, categoryView)
 	}
-	return categories
+	return categoryViews
 
 }

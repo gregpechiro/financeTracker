@@ -24,20 +24,16 @@ var account = web.Route{"GET", "/account", func(w http.ResponseWriter, r *http.R
 	var transactions []Transaction
 	db.TestQuery("transaction", &transactions, adb.Eq("accountId", `"`+user.AccountId+`"`))
 
-	//gets all categories for an account
-	/*var budgetItems []BudgetItem
-	db.TestQuery("budgetItems", &budgetItems, adb.Eq("accountId", `"`+user.AccountId+`"`))*/
-
 	tmpl.Render(w, r, "account.tmpl", web.Model{
 		"transactions": transactions,
-		"categories":   getCategories(user.AccountId),
+		"categories":   getCategoryView(user.AccountId),
 		"user":         user,
 	})
 
 	return
 }}
 
-var budget = web.Route{"GET", "/budget", func(w http.ResponseWriter, r *http.Request) {
+var category = web.Route{"GET", "/category", func(w http.ResponseWriter, r *http.Request) {
 
 	id := web.GetId(r)
 	var user User
@@ -57,8 +53,8 @@ var budget = web.Route{"GET", "/budget", func(w http.ResponseWriter, r *http.Req
 	/*var budgetItems []BudgetItem
 	db.TestQuery("budgetItem", &budgetItems, adb.Eq("accountId", `"`+user.AccountId+`"`))*/
 
-	tmpl.Render(w, r, "budget.tmpl", web.Model{
-		"categories": getCategories(user.AccountId),
+	tmpl.Render(w, r, "category.tmpl", web.Model{
+		"categories": getCategoryView(user.AccountId),
 		"user":       user,
 	})
 
@@ -100,7 +96,7 @@ var transactionSave = web.Route{"POST", "/transaction", func(w http.ResponseWrit
 
 }}
 
-var budgetItemSave = web.Route{"POST", "/budgetItem", func(w http.ResponseWriter, r *http.Request) {
+var subcategorySave = web.Route{"POST", "/subcategory", func(w http.ResponseWriter, r *http.Request) {
 
 	id := web.GetId(r)
 	var user User
@@ -113,27 +109,27 @@ var budgetItemSave = web.Route{"POST", "/budgetItem", func(w http.ResponseWriter
 	}
 
 	// err check for empty formvalue
-	var budgetItem BudgetItem
+	var subcategory Subcategory
 	if r.FormValue("title") == "" {
-		web.SetErrorRedirect(w, r, "/budget", "Error saving budget item")
+		web.SetErrorRedirect(w, r, "/category", "Error saving budget item")
 		return
 	}
 	// assign fields
-	budgetItem.Id = genId()
-	budgetItem.AccountId = user.AccountId
-	budgetItem.BudgetGroupId = r.FormValue("budgetGroupId")
-	budgetItem.Title = r.FormValue("title")
+	subcategory.Id = genId()
+	subcategory.AccountId = user.AccountId
+	subcategory.CategoryId = r.FormValue("categoryId")
+	subcategory.Title = r.FormValue("title")
 
 	// save to db with err check
-	if !db.Add("budgetItem", budgetItem.Id, budgetItem) {
-		web.SetErrorRedirect(w, r, "/budget", "Error saving budget item")
+	if !db.Add("subcategory", subcategory.Id, subcategory) {
+		web.SetErrorRedirect(w, r, "/category", "Error saving budget item")
 		return
 	}
-	web.SetSuccessRedirect(w, r, "/budget", "Budget Item Added")
+	web.SetSuccessRedirect(w, r, "/category", "Budget Item Added")
 
 }}
 
-var budgetGroupSave = web.Route{"POST", "/budgetGroup", func(w http.ResponseWriter, r *http.Request) {
+var categorySave = web.Route{"POST", "/category", func(w http.ResponseWriter, r *http.Request) {
 
 	id := web.GetId(r)
 	var user User
@@ -146,30 +142,30 @@ var budgetGroupSave = web.Route{"POST", "/budgetGroup", func(w http.ResponseWrit
 	}
 
 	// parses form and throws it into a variable
-	var budgetGroup BudgetGroup
+	var category Category
 	r.ParseForm()
-	if errs, ok := web.FormToStruct(&budgetGroup, r.Form, "budgetGroup"); !ok {
+	if errs, ok := web.FormToStruct(&category, r.Form, "category"); !ok {
 		web.SetFormErrors(w, errs)
-		web.SetErrorRedirect(w, r, "/budget", "Error saving budget group")
+		web.SetErrorRedirect(w, r, "/category", "Error saving budget group")
 		return
 	}
 	// assign non parsed fields
-	budgetGroup.Id = genId()
-	budgetGroup.AccountId = user.AccountId
+	category.Id = genId()
+	category.AccountId = user.AccountId
 
 	// save to db with err check
-	if !db.Add("budgetGroup", budgetGroup.Id, budgetGroup) {
-		web.SetErrorRedirect(w, r, "/budget", "Error saving budget group")
+	if !db.Add("category", category.Id, category) {
+		web.SetErrorRedirect(w, r, "/category", "Error saving budget group")
 		return
 	}
-	web.SetSuccessRedirect(w, r, "/budget", "Budget Group Added")
+	web.SetSuccessRedirect(w, r, "/category", "Budget Group Added")
 
 }}
 
-var budgetGroupDel = web.Route{"POST", "/budgetGroup/:id/del", func(w http.ResponseWriter, r *http.Request) {
+var categoryDel = web.Route{"POST", "/category/:id/del", func(w http.ResponseWriter, r *http.Request) {
 
-	var budgetGroup BudgetGroup
-	var budgetItems []BudgetItem
+	var category Category
+	var subcategories []Subcategory
 
 	id := web.GetId(r)
 	var user User
@@ -181,31 +177,31 @@ var budgetGroupDel = web.Route{"POST", "/budgetGroup/:id/del", func(w http.Respo
 		return
 	}
 
-	db.Get("budgetGroup", r.FormValue(":id"), &budgetGroup)
+	db.Get("category", r.FormValue(":id"), &category)
 
-	if user.AccountId != budgetGroup.AccountId {
-		web.SetErrorRedirect(w, r, "/budget", "Error deleting, Please try again")
+	if user.AccountId != category.AccountId {
+		web.SetErrorRedirect(w, r, "/category", "Error deleting, Please try again")
 		return
 	}
-	db.TestQuery("budgetItems", &budgetItems, adb.Eq("budgetGroupId", `"`+budgetGroup.Id+`"`))
+	db.TestQuery("subcategory", &subcategories, adb.Eq("categoryId", `"`+category.Id+`"`))
 
-	for _, item := range budgetItems {
-		db.Del("budgetItem", item.Id)
+	for _, item := range subcategories {
+		db.Del("subcategory", item.Id)
 	}
 
-	db.Del("budgetGroup", budgetGroup.Id)
+	db.Del("category", category.Id)
 
-	web.SetSuccessRedirect(w, r, "/budget", "Budget Group Deleted")
+	web.SetSuccessRedirect(w, r, "/category", "Budget Group Deleted")
 
 	return
 
 }}
 
-var budgetItemDel = web.Route{"POST", "/budgetItem/:id/del", func(w http.ResponseWriter, r *http.Request) {
+var subcategoryDel = web.Route{"POST", "/subcategory/:id/del", func(w http.ResponseWriter, r *http.Request) {
 
 	id := web.GetId(r)
 	var user User
-	var budgetItem BudgetItem
+	var subcategory Subcategory
 
 	// gets user and double checks that the user exists still
 	if !db.Get("user", id, &user) {
@@ -214,16 +210,16 @@ var budgetItemDel = web.Route{"POST", "/budgetItem/:id/del", func(w http.Respons
 		return
 	}
 
-	db.Get("budgetItem", r.FormValue(":id"), &budgetItem)
+	db.Get("subcateogry", r.FormValue(":id"), &subcategory)
 
-	if user.AccountId != budgetItem.AccountId {
-		web.SetErrorRedirect(w, r, "/budget", "Error deleting budget item, Please try again")
+	if user.AccountId != subcategory.AccountId {
+		web.SetErrorRedirect(w, r, "/category", "Error deleting budget item, Please try again")
 		return
 	}
 
-	db.Del("budgetItem", budgetItem.Id)
+	db.Del("subcategory", subcategory.Id)
 
-	web.SetSuccessRedirect(w, r, "/budget", "Budget Item Deleted")
+	web.SetSuccessRedirect(w, r, "/category", "Budget Item Deleted")
 
 	return
 
