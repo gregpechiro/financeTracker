@@ -177,18 +177,24 @@ var categoryDel = web.Route{"POST", "/category/:id/del", func(w http.ResponseWri
 		return
 	}
 
+	// gets category from id in url
 	db.Get("category", r.FormValue(":id"), &category)
 
+	// err checks for ownership of account
 	if user.AccountId != category.AccountId {
 		web.SetErrorRedirect(w, r, "/category", "Error deleting, Please try again")
 		return
 	}
+
+	// queries for subcategories with a matching categoryid
 	db.TestQuery("subcategory", &subcategories, adb.Eq("categoryId", `"`+category.Id+`"`))
 
+	// loops to delete subcateogries
 	for _, item := range subcategories {
 		db.Del("subcategory", item.Id)
 	}
 
+	// deletes category
 	db.Del("category", category.Id)
 
 	web.SetSuccessRedirect(w, r, "/category", "Cateogry Deleted")
@@ -210,13 +216,16 @@ var subcategoryDel = web.Route{"POST", "/subcategory/:id/del", func(w http.Respo
 		return
 	}
 
+	// gets subcategory from id in url
 	db.Get("subcateogry", r.FormValue(":id"), &subcategory)
 
+	// err checks for ownership of account
 	if user.AccountId != subcategory.AccountId {
 		web.SetErrorRedirect(w, r, "/category", "Error deleting budget item, Please try again")
 		return
 	}
 
+	// deletes subcategory
 	db.Del("subcategory", subcategory.Id)
 
 	web.SetSuccessRedirect(w, r, "/category", "Subcategory Deleted")
@@ -238,15 +247,19 @@ var subcategoryRename = web.Route{"POST", "/subcategory/:id/rename", func(w http
 		return
 	}
 
+	// gets subcategory from id in url
 	db.Get("subcateogry", r.FormValue(":id"), &subcategory)
 
+	// err checks for ownership of account
 	if user.AccountId != subcategory.AccountId {
 		web.SetErrorRedirect(w, r, "/category", "Error renaming subcategory, Please try again")
 		return
 	}
 
+	// assigns new title for subcategory
 	subcategory.Title = r.FormValue("title")
 
+	// saves changes to the db
 	db.Set("subcategory", subcategory.Id, subcategory)
 
 	web.SetSuccessRedirect(w, r, "/category", "Subcategory Renamed")
@@ -266,7 +279,7 @@ var categoryRename = web.Route{"POST", "/category", func(w http.ResponseWriter, 
 		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
 		return
 	}
-
+	//
 	db.Get("category", r.FormValue(":id"), &category)
 
 	if user.AccountId != category.AccountId {
@@ -297,14 +310,14 @@ var subcategoryMove = web.Route{"POST", "/subcategory/:id/move", func(w http.Res
 		return
 	}
 
-	db.Get("subcateogry", r.FormValue(":id"), &subcategory)
+	db.Get("subcategory", r.FormValue(":id"), &subcategory)
 
 	if user.AccountId != subcategory.AccountId {
 		web.SetErrorRedirect(w, r, "/category", "Error moving subcategory, Please try again")
 		return
 	}
 
-	subcategory.CategoryId = r.FormValue(":id")
+	subcategory.CategoryId = r.FormValue("categoryId")
 
 	db.Set("subcategory", subcategory.Id, subcategory)
 
