@@ -217,11 +217,11 @@ var subcategoryDel = web.Route{"POST", "/subcategory/:id/del", func(w http.Respo
 	}
 
 	// gets subcategory from id in url
-	db.Get("subcateogry", r.FormValue(":id"), &subcategory)
+	db.Get("subcategory", r.FormValue(":id"), &subcategory)
 
 	// err checks for ownership of account
 	if user.AccountId != subcategory.AccountId {
-		web.SetErrorRedirect(w, r, "/category", "Error deleting budget item, Please try again")
+		web.SetErrorRedirect(w, r, "/category", "Error deleting subcategory, Please try again")
 		return
 	}
 
@@ -248,7 +248,7 @@ var subcategoryRename = web.Route{"POST", "/subcategory/:id/rename", func(w http
 	}
 
 	// gets subcategory from id in url
-	db.Get("subcateogry", r.FormValue(":id"), &subcategory)
+	db.Get("subcategory", r.FormValue(":id"), &subcategory)
 
 	// err checks for ownership of account
 	if user.AccountId != subcategory.AccountId {
