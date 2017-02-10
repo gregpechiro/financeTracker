@@ -256,7 +256,7 @@ var subcategoryRename = web.Route{"POST", "/subcategory/:id/rename", func(w http
 		return
 	}
 
-	// assigns new title for subcategory
+	// assigns new subcategory title
 	subcategory.Title = r.FormValue("title")
 
 	// saves changes to the db
@@ -279,16 +279,19 @@ var categoryRename = web.Route{"POST", "/category", func(w http.ResponseWriter, 
 		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
 		return
 	}
-	//
+	// gets category from id in url
 	db.Get("category", r.FormValue(":id"), &category)
 
+	// err checks for ownership of account
 	if user.AccountId != category.AccountId {
 		web.SetErrorRedirect(w, r, "/category", "Error renaming category, Please try again")
 		return
 	}
 
+	// assigns new category title
 	category.Title = r.FormValue("title")
 
+	// saves changes to the db
 	db.Set("category", category.Id, category)
 
 	web.SetSuccessRedirect(w, r, "/category", "Category Renamed")
@@ -310,15 +313,18 @@ var subcategoryMove = web.Route{"POST", "/subcategory/:id/move", func(w http.Res
 		return
 	}
 
+	// gets subcategory from id in url
 	db.Get("subcategory", r.FormValue(":id"), &subcategory)
 
+	// err checks for ownership of account
 	if user.AccountId != subcategory.AccountId {
 		web.SetErrorRedirect(w, r, "/category", "Error moving subcategory, Please try again")
 		return
 	}
-
+	// assigns new category id
 	subcategory.CategoryId = r.FormValue("categoryId")
 
+	// saves changes to the db
 	db.Set("subcategory", subcategory.Id, subcategory)
 
 	web.SetSuccessRedirect(w, r, "/category", "Subcategory Moved")
