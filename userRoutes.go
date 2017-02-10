@@ -241,12 +241,17 @@ var subcategoryRename = web.Route{"POST", "/subcategory/:id/rename", func(w http
 	db.Get("subcateogry", r.FormValue(":id"), &subcategory)
 
 	if user.AccountId != subcategory.AccountId {
-		web.SetErrorRedirect(w, r, "/category", "Error deleting budget item, Please try again")
+		web.SetErrorRedirect(w, r, "/category", "Error renaming subcategory, Please try again")
 		return
 	}
 
-	db.Set("subcategory", r.FormValue("key"), &subcategory)
+	subcategory.Title = r.FormValue("title")
 
+	db.Set("subcategory", subcategory.Id, subcategory)
+
+	web.SetSuccessRedirect(w, r, "/category", "Subcategory Renamed")
+
+	return
 }}
 
 var categoryRename = web.Route{"POST", "/category", func(w http.ResponseWriter, r *http.Request) {
@@ -265,8 +270,45 @@ var categoryRename = web.Route{"POST", "/category", func(w http.ResponseWriter, 
 	db.Get("category", r.FormValue(":id"), &category)
 
 	if user.AccountId != category.AccountId {
-		web.SetErrorRedirect(w, r, "/category", "Error deleting c, Please try again")
+		web.SetErrorRedirect(w, r, "/category", "Error renaming category, Please try again")
 		return
 	}
 
+	category.Title = r.FormValue("title")
+
+	db.Set("category", category.Id, category)
+
+	web.SetSuccessRedirect(w, r, "/category", "Category Renamed")
+
+	return
+
+}}
+
+var subcategoryMove = web.Route{"POST", "/subcategory/:id/move", func(w http.ResponseWriter, r *http.Request) {
+
+	id := web.GetId(r)
+	var user User
+	var subcategory Subcategory
+
+	// gets user and double checks that the user exists still
+	if !db.Get("user", id, &user) {
+		web.Logout(w)
+		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
+		return
+	}
+
+	db.Get("subcateogry", r.FormValue(":id"), &subcategory)
+
+	if user.AccountId != subcategory.AccountId {
+		web.SetErrorRedirect(w, r, "/category", "Error moving subcategory, Please try again")
+		return
+	}
+
+	subcategory.CategoryId = r.FormValue(":id")
+
+	db.Set("subcategory", subcategory.Id, subcategory)
+
+	web.SetSuccessRedirect(w, r, "/category", "Subcategory Moved")
+
+	return
 }}
