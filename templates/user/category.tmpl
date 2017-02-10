@@ -27,7 +27,7 @@
                         <div class="panel-group" id="categories" role="tablist" aria-multiselectable="true">
                             {{ range $i, $category := .categories }}
                                 <div class="panel panel-default">
-                                    <div class="panel-heading clearfix" role="tab" id="headingOne">
+                                    <div id="{{ $category.Group.Id }}" class="panel-heading clearfix" role="tab" data-index="{{ $i }}">
                                         <h4 class="panel-title clearfix">
                                             <a role="button" data-toggle="collapse" data-parent="#categories" href="#category-{{ $i }}" aria-expanded="true" aria-controls="collapseOne">
                                                 {{ $category.Group.Title }}
@@ -44,7 +44,7 @@
                                             {{ if $category.Items }}
                                                 <ul class="list-group">
                                                     {{ range $sub := $category.Items }}
-                                                        <li class="list-group-item">
+                                                        <li id="{{ $sub.Id }}" class="list-group-item" draggable="true">
                                                             {{ $sub.Title }}
                                                             <div class="btn-group btn-group-xs pull-right">
                                                                 <button class="btn btn-warning">Rename</button>
@@ -122,6 +122,33 @@
                 $('input#budgetGroupId').val($(this).attr('data-group-id'));
                 $('div#budgetItemModal').modal('show');
             });
+
+            document.addEventListener("dragover", function(e) {
+                // prevent default to allow drop
+                e.preventDefault();
+            }, false);
+
+            $('li.list-group-item').on('dragstart', function(e) {
+                e.dataTransfer.setData("id", e.target.id);
+            });
+
+            $('div.panel-heading').on('dragenter', function(e) {
+                var i = $(this).attr('data-index');
+                $('div#category-' + i).collapse('show');
+            });
+
+            $('div.panel-heading').on('dragleave', function() {
+                var i = $(this).attr('data-index');
+                $('div#category-' + i).collapse('hide');
+            });
+
+            $('div.panel-heading').on('drop', function(e) {
+                e.preventDefault();
+                var id = ev.dataTransfer.getData("id");
+                var groupId = $('this').attr('id');
+                console.log('move sub: ' + id + ' to category: ' + groupId);
+            });
+
         </script>
 
     </body>
