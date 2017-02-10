@@ -21,19 +21,19 @@
                 <div class="col-lg-12 col-xl-12">
                     <legend>
                         Categories
-                        <button class="btn btn-default btn-xs pull-right" data-toggle="modal" data-target="#budgetGroupModal">Add Category</button>
+                        <button class="btn btn-default btn-xs pull-right" data-toggle="modal" data-target="#categoryModal">Add Category</button>
                     </legend>
-                    {{ if .categories }}
+                    {{ if .categoryViews }}
                         <div class="panel-group" id="categories" role="tablist" aria-multiselectable="true">
-                            {{ range $i, $category := .categories }}
+                            {{ range $i, $categoryView := .categoryViews }}
                                 <div class="panel panel-default">
-                                    <div id="{{ $category.Group.Id }}" class="panel-heading clearfix" role="tab" data-index="{{ $i }}">
+                                    <div id="{{ $categoryView.Category.Id }}" class="panel-heading clearfix" role="tab" data-index="{{ $i }}" data-title="{{ $categoryView.Category.Title }}">
                                         <h4 class="panel-title clearfix">
                                             <a role="button" data-toggle="collapse" data-parent="#categories" href="#category-{{ $i }}" aria-expanded="true" aria-controls="collapseOne">
-                                                {{ $category.Group.Title }}
+                                                {{ $categoryView.Category.Title }}
                                             </a>
                                             <div class="btn-group btn-group-xs pull-right">
-                                                <button class="btn btn-xs btn-default subcategory" data-group-id="{{ $category.Group.Id }}">Add Subcategory</button>
+                                                <button class="btn btn-xs btn-default subcategory" data-category-id="{{ $categoryView.Category.Id }}">Add Subcategory</button>
                                                 <button class="btn btn-warning">Rename</button>
                                                 <button class="btn btn-danger">Delete</button>
                                             </div>
@@ -41,11 +41,11 @@
                                     </div>
                                     <div id="category-{{ $i }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
                                         <div class="panel-body">
-                                            {{ if $category.Items }}
+                                            {{ if $categoryView.Subcategories }}
                                                 <ul class="list-group">
-                                                    {{ range $sub := $category.Items }}
-                                                        <li id="{{ $sub.Id }}" class="list-group-item" draggable="true">
-                                                            {{ $sub.Title }}
+                                                    {{ range $subcategory := $categoryView.Subcategories }}
+                                                        <li id="{{ $subcategory.Id }}" class="list-group-item" data-title="{{ $subcategory.Title }}" draggable="true">
+                                                            {{ $subcategory.Title }}
                                                             <div class="btn-group btn-group-xs pull-right">
                                                                 <button class="btn btn-warning">Rename</button>
                                                                 <button class="btn btn-danger">Delete</button>
@@ -62,13 +62,13 @@
                             {{ end }}
                         </div>
                     {{ else }}
-                        No Groups
+                        No Categories
                     {{ end }}
                 </div>
             </div>
         </div>
 
-        <div class="modal fade" id="budgetGroupModal" tabindex="-1" role="dialog">
+        <div class="modal fade" id="categoryModal" tabindex="-1" role="dialog">
             <div class="modal-dialog modal-sm" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -76,7 +76,7 @@
                         <h4 class="modal-title">Add Category</h4>
                     </div>
                     <div class="modal-body">
-                        <form class="form-horizontal" action="/budgetGroup" method="post">
+                        <form class="form-horizontal" action="/category" method="post">
                             <div class="form-group">
                                 <label class="col-xs-4 control-label">Title</label>
                                 <div class="col-xs-8">
@@ -90,7 +90,7 @@
             </div>
         </div>
 
-        <div class="modal fade" id="budgetItemModal" tabindex="-1" role="dialog">
+        <div class="modal fade" id="subcategoryModal" tabindex="-1" role="dialog">
             <div class="modal-dialog modal-sm" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -98,14 +98,14 @@
                         <h4 class="modal-title">Add Subcategory</h4>
                     </div>
                     <div class="modal-body">
-                        <form class="form-horizontal" action="/budgetItem" method="post">
+                        <form class="form-horizontal" action="/subcategory" method="post">
                             <div class="form-group">
                                 <label class="col-xs-4 control-label">Title</label>
                                 <div class="col-xs-8">
                                     <input class="form-control" type="text" name="title">
                                 </div>
                             </div>
-                            <input id="budgetGroupId" type="hidden" name="budgetGroupId" value="">
+                            <input id="categoryId" type="hidden" name="categoryId" value="">
                             <button class="btn btn-success btn-block">Save</button>
                         </form>
                     </div>
@@ -113,14 +113,21 @@
             </div>
         </div>
 
+        <form id="move-form" class="hide" action="" method="post">
+            <input type="hidden" id="categoryId" name="categoryId" value="">
+        </form>
+
         {{ template "scripts.tmpl" . }}
 
         {{ template "session.tmpl" . }}
 
         <script type="text/javascript">
+
+            var moveId;
+
             $('button.subcategory').click(function() {
-                $('input#budgetGroupId').val($(this).attr('data-group-id'));
-                $('div#budgetItemModal').modal('show');
+                $('input#categoryId').val($(this).attr('data-category-id'));
+                $('div#subcategoryModal').modal('show');
             });
 
             document.addEventListener("dragover", function(e) {
@@ -129,24 +136,42 @@
             }, false);
 
             $('li.list-group-item').on('dragstart', function(e) {
-                e.dataTransfer.setData("id", e.target.id);
+                moveId = $(this).attr('id');
             });
 
             $('div.panel-heading').on('dragenter', function(e) {
-                var i = $(this).attr('data-index');
+                var i = $(this).attr('data-index');;
+                $('div.collapse').collapse('hide');
                 $('div#category-' + i).collapse('show');
             });
 
-            $('div.panel-heading').on('dragleave', function() {
+            /*$('div.panel-heading').on('dragleave', function() {
                 var i = $(this).attr('data-index');
                 $('div#category-' + i).collapse('hide');
-            });
+            });*/
 
             $('div.panel-heading').on('drop', function(e) {
                 e.preventDefault();
-                var id = ev.dataTransfer.getData("id");
-                var groupId = $('this').attr('id');
-                console.log('move sub: ' + id + ' to category: ' + groupId);
+                var categoryId = $(this).attr('id');
+                var category = $(this).attr('data-title');
+                var subcategory = $('li#' + moveId).attr('data-title');
+
+                swal({
+                    title: '',
+                    text: 'Are you sure you would like to move ' + subcategory + ' to ' + category + '?',
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: 'red',
+                    confirmButtonText: "Yes",
+                    closeOnConfirm: false
+                }, function() {
+                    $('form#move-form').attr('action', '/subcategory/' + moveId + '/move');
+                    $('form#move-form input#categoryId').val(categoryId);
+                    $('form#move-form').submit();
+                });
+
+                // moveId = '';
+
             });
 
         </script>
