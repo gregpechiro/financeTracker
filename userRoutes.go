@@ -25,9 +25,9 @@ var account = web.Route{"GET", "/account", func(w http.ResponseWriter, r *http.R
 	db.TestQuery("transaction", &transactions, adb.Eq("accountId", `"`+user.AccountId+`"`))
 
 	tmpl.Render(w, r, "account.tmpl", web.Model{
-		"transactions": transactions,
-		"categories":   getCategoryView(user.AccountId),
-		"user":         user,
+		"transactions":  transactions,
+		"categoryViews": getCategoryView(user.AccountId),
+		"user":          user,
 	})
 
 	return
@@ -54,8 +54,8 @@ var category = web.Route{"GET", "/category", func(w http.ResponseWriter, r *http
 	db.TestQuery("budgetItem", &budgetItems, adb.Eq("accountId", `"`+user.AccountId+`"`))*/
 
 	tmpl.Render(w, r, "category.tmpl", web.Model{
-		"categories": getCategoryView(user.AccountId),
-		"user":       user,
+		"categoryViews": getCategoryView(user.AccountId),
+		"user":          user,
 	})
 
 	return
@@ -111,7 +111,7 @@ var subcategorySave = web.Route{"POST", "/subcategory", func(w http.ResponseWrit
 	// err check for empty formvalue
 	var subcategory Subcategory
 	if r.FormValue("title") == "" {
-		web.SetErrorRedirect(w, r, "/category", "Error saving budget item")
+		web.SetErrorRedirect(w, r, "/category", "Error saving subcategory")
 		return
 	}
 	// assign fields
@@ -122,10 +122,10 @@ var subcategorySave = web.Route{"POST", "/subcategory", func(w http.ResponseWrit
 
 	// save to db with err check
 	if !db.Add("subcategory", subcategory.Id, subcategory) {
-		web.SetErrorRedirect(w, r, "/category", "Error saving budget item")
+		web.SetErrorRedirect(w, r, "/category", "Error saving subcategory")
 		return
 	}
-	web.SetSuccessRedirect(w, r, "/category", "Budget Item Added")
+	web.SetSuccessRedirect(w, r, "/category", "Subcategory Added")
 
 }}
 
@@ -146,7 +146,7 @@ var categorySave = web.Route{"POST", "/category", func(w http.ResponseWriter, r 
 	r.ParseForm()
 	if errs, ok := web.FormToStruct(&category, r.Form, "category"); !ok {
 		web.SetFormErrors(w, errs)
-		web.SetErrorRedirect(w, r, "/category", "Error saving budget group")
+		web.SetErrorRedirect(w, r, "/category", "Error saving category")
 		return
 	}
 	// assign non parsed fields
@@ -155,10 +155,10 @@ var categorySave = web.Route{"POST", "/category", func(w http.ResponseWriter, r 
 
 	// save to db with err check
 	if !db.Add("category", category.Id, category) {
-		web.SetErrorRedirect(w, r, "/category", "Error saving budget group")
+		web.SetErrorRedirect(w, r, "/category", "Error saving category")
 		return
 	}
-	web.SetSuccessRedirect(w, r, "/category", "Budget Group Added")
+	web.SetSuccessRedirect(w, r, "/category", "Category Added")
 
 }}
 
@@ -191,7 +191,7 @@ var categoryDel = web.Route{"POST", "/category/:id/del", func(w http.ResponseWri
 
 	db.Del("category", category.Id)
 
-	web.SetSuccessRedirect(w, r, "/category", "Budget Group Deleted")
+	web.SetSuccessRedirect(w, r, "/category", "Cateogry Deleted")
 
 	return
 
@@ -219,8 +219,54 @@ var subcategoryDel = web.Route{"POST", "/subcategory/:id/del", func(w http.Respo
 
 	db.Del("subcategory", subcategory.Id)
 
-	web.SetSuccessRedirect(w, r, "/category", "Budget Item Deleted")
+	web.SetSuccessRedirect(w, r, "/category", "Subcategory Deleted")
 
 	return
+
+}}
+
+var subcategoryRename = web.Route{"POST", "/subcategory/:id/rename", func(w http.ResponseWriter, r *http.Request) {
+
+	id := web.GetId(r)
+	var user User
+	var subcategory Subcategory
+
+	// gets user and double checks that the user exists still
+	if !db.Get("user", id, &user) {
+		web.Logout(w)
+		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
+		return
+	}
+
+	db.Get("subcateogry", r.FormValue(":id"), &subcategory)
+
+	if user.AccountId != subcategory.AccountId {
+		web.SetErrorRedirect(w, r, "/category", "Error deleting budget item, Please try again")
+		return
+	}
+
+	db.Set("subcategory", r.FormValue("key"), &subcategory)
+
+}}
+
+var categoryRename = web.Route{"POST", "/category", func(w http.ResponseWriter, r *http.Request) {
+
+	id := web.GetId(r)
+	var user User
+	var category Category
+
+	// gets user and double checks that the user exists still
+	if !db.Get("user", id, &user) {
+		web.Logout(w)
+		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
+		return
+	}
+
+	db.Get("category", r.FormValue(":id"), &category)
+
+	if user.AccountId != category.AccountId {
+		web.SetErrorRedirect(w, r, "/category", "Error deleting c, Please try again")
+		return
+	}
 
 }}

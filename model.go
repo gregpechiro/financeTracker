@@ -46,8 +46,8 @@ type Category struct {
 }
 
 type CategoryView struct {
-	Group Category
-	Items []Subcategory
+	Category      Category
+	Subcategories []Subcategory
 }
 
 func getCategoryView(accountId string) []CategoryView {
@@ -55,12 +55,12 @@ func getCategoryView(accountId string) []CategoryView {
 	var categoryViews []CategoryView
 	db.TestQuery("category", &categories, adb.Eq("accountId", `"`+accountId+`"`))
 
-	for _, g := range categories {
+	for _, category := range categories {
 		var categoryView CategoryView
-		var subcategory []Subcategory
-		db.TestQuery("subcategory", &subcategory, adb.Eq("subcategoryId", `"`+g.Id+`"`))
-		categoryView.Group = g
-		categoryView.Items = subcategory
+		var subcategories []Subcategory
+		db.TestQuery("subcategory", &subcategories, adb.Eq("categoryId", `"`+category.Id+`"`))
+		categoryView.Category = category
+		categoryView.Subcategories = subcategories
 		categoryViews = append(categoryViews, categoryView)
 	}
 	return categoryViews
