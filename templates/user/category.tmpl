@@ -149,11 +149,6 @@
                 $('div#category-' + i).collapse('show');
             });
 
-            /*$('div.panel-heading').on('dragleave', function() {
-                var i = $(this).attr('data-index');
-                $('div#category-' + i).collapse('hide');
-            });*/
-
             $('div.panel-heading').on('drop', function(e) {
                 e.preventDefault();
                 var categoryId = $(this).attr('id');
