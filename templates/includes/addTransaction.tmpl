@@ -1,0 +1,279 @@
+<div class="modal fade" id="transactionModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Add Transaction</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-lg-4 control-label">Quick Transaction</label>
+                        <div class="col-lg-8">
+                            <select id="quickTransaction" class="form-control">
+                                <option value="">None</option>
+                                {{ range $i, $quickTransaction := .quickTransactions }}
+                                    <option value="{{ $i }}">{{ $quickTransaction.Title }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="transactionForm" class="form-horizontal" action="/transaction" method="post">
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">Title</label>
+                        <div class="col-xs-8">
+                            <input class="form-control" type="text" name="title">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">Description</label>
+                        <div class="col-xs-8">
+                            <input class="form-control" type="text" name="description">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">Ammount</label>
+                        <div class="col-xs-8">
+                            <input id="ammount" class="form-control" type="text" name="ammount">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-lg-4 control-label">Date</label>
+                        <div class="col-lg-8">
+                            <div class="input-group">
+                                <input type="text" class="form-control datepicker" name="dateString" placeholder="Date">
+                                <span class="input-group-addon calander"><i class="glyphicon glyphicon-calendar"></i></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">Who</label>
+                        <div class="col-xs-8">
+                            <div class="input-group">
+                                <select class="form-control category">
+                                    <option value="">None</option>
+                                    {{ range $who := OrderCategories .user.People }}
+                                        <option value="{{ $who }}">{{ Title $who }}</option>
+                                    {{ end }}
+                                </select>
+                                <input type="text" class="form-control hide category" name="who" value="">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default category" type="button">Add</button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">Category</label>
+                        <div class="col-xs-8">
+                            <div class="input-group">
+                                <select class="form-control category">
+                                    <option value="">None</option>
+                                    {{ range $category := OrderCategories .user.Categories }}
+                                        <option value="{{ $category }}">{{ Title $category }}</option>
+                                    {{ end }}
+                                </select>
+                                <input type="text" class="form-control hide category" name="category" value="">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default category" type="button">Add</button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">Secondary Category</label>
+                        <div class="col-xs-8">
+                            <div class="input-group">
+                                <select class="form-control category">
+                                    <option value="">None</option>
+                                    {{ range $category := OrderCategories .user.Categories }}
+                                        <option value="{{ $category }}">{{ Title $category }}</option>
+                                    {{ end }}
+                                </select>
+                                <input type="text" class="form-control hide category" name="secondaryCategory" value="">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default category" type="button">Add</button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-lg-offset-4 col-lg-8">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="save" value="save"> Save as quick transaction
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-offset-1 col-lg-4">
+                            <a class="btn btn-danger btn-block expense">Expense</a>
+                        </div>
+                        <div class="col-lg-offset-2 col-lg-4">
+                            <button class="btn btn-success btn-block">Income</button>
+                        </div>
+                    </div>
+                </form>
+
+                <form id="quickTransactionForm" class="form-horizontal hide" action="/transaction" method="post">
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">Title</label>
+                        <div class="col-xs-8">
+                            <div id="title" class="display-value"></div>
+                            <input id="title" class="form-control" type="hidden" name="title">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">Description</label>
+                        <div class="col-xs-8">
+                            <div id="description" class="display-value"></div>
+                            <input id="description" class="form-control" type="hidden" name="description">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">Ammount</label>
+                        <div class="col-xs-8">
+                            <input id="ammount" class="form-control" type="text" name="ammount">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-lg-4 control-label">Date</label>
+                        <div class="col-lg-8">
+                            <div class="input-group">
+                                <input type="text" class="form-control datepicker" name="dateString" placeholder="Date">
+                                <span class="input-group-addon calander"><i class="glyphicon glyphicon-calendar"></i></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">Who</label>
+                        <div class="col-xs-8">
+                            <div id="who" class="display-value"></div>
+                            <input id="who" type="hidden" class="form-control category">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">Category</label>
+                        <div class="col-xs-8">
+                            <div id="category" class="display-value"></div>
+                            <input id="category" type="hidden" class="form-control category">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label">Secondary Category</label>
+                        <div class="col-xs-8">
+                            <div id="secondaryCategory" class="display-value"></div>
+                            <input id="secondaryCategory" type="hidden" class="form-control category">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-offset-1 col-lg-4">
+                            <a class="btn btn-danger btn-block expense">Expense</a>
+                        </div>
+                        <div class="col-lg-offset-2 col-lg-4">
+                            <button class="btn btn-success btn-block income">Income</button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var quickTransactions = {{ if .quickTransactions }}{{ toJson .quickTransactions }}{{ else }}[]{{ end }}
+
+    $('.datepicker').datepicker({
+        maxViewMode: 'years',
+        format:'m/d/yyyy',
+        autoclose: true,
+        orientation: 'bottom'
+    });
+
+    $('select.category').change(function() {
+        $(this).closest('div.input-group').find('input.category').val($(this).val());
+    });
+
+    $('button.category').click(function() {
+        var button = $(this);
+        var selector;
+        var input = button.closest('div.input-group').find('input.category');
+        var select = button.closest('div.input-group').find('select.category');
+        if (button.text() == 'Add') {
+            input.removeClass('hide');
+            select.addClass('hide');
+            input.val('');
+            button.text('Cancel');
+            return
+        }
+        button.text('Add');
+        input.addClass('hide');
+        select.removeClass('hide');
+        input.val(select.Val());
+    });
+
+    $('a.expense').click(function() {
+        var form = $(this).closest('form');
+        var ammount = form.find('input#ammount');
+        ammount.val('-' + ammount.val());
+        form.submit();
+    });
+
+    $('select#quickTransaction').change(function() {
+        if ($(this).val() == '') {
+            resetTransaction();
+            return
+        }
+        var idx =+ $(this).val();
+        var quickTransaction = quickTransactions[idx];
+        $('form#quickTransactionForm input#title').val(quickTransaction.title);
+        $('form#quickTransactionForm div#title').html(quickTransaction.title);
+        $('form#quickTransactionForm input#description').val(quickTransaction.description);
+        $('form#quickTransactionForm div#description').html(quickTransaction.description);
+
+        $('form#quickTransactionForm input#ammount').val(Math.abs(quickTransaction.ammount));
+
+        $('form#quickTransactionForm input#who').val(quickTransaction.who);
+        $('form#quickTransactionForm div#who').html(toTitleCase(quickTransaction.who));
+
+        $('form#quickTransactionForm input#category').val(quickTransaction.category);
+        $('form#quickTransactionForm div#category').html(toTitleCase(quickTransaction.category));
+
+        $('form#quickTransactionForm input#secondaryCategory').val(quickTransaction.secondaryCategory);
+        $('form#quickTransactionForm div#secondaryCategory').html(toTitleCase(quickTransaction.secondaryCategory));
+
+        if (quickTransaction.ammount < 0) {
+            $('form#quickTransactionForm .income').addClass('hide');
+        } else {
+            $('form#quickTransactionForm .expense').addClass('hide');
+        }
+
+        $('form#quickTransactionForm').removeClass('hide');
+        $('form#transactionForm').addClass('hide');
+
+    });
+
+    function resetTransaction() {
+        $('form#quickTransactionForm')[0].reset();
+        $('form#transactionForm')[0].reset();
+
+        $('form#quickTransactionForm .expense').removeClass('hide');
+        $('form#quickTransactionForm .income').removeClass('hide');
+
+        $('form#quickTransactionForm').addClass('hide');
+        $('form#transactionForm').removeClass('hide');
+
+        $('select#quickTransaction').val('');
+    }
+
+    $('#transactionModal').on('hidden.bs.modal', function() {
+        resetTransaction();
+    });
+
+</script>

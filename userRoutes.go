@@ -2,60 +2,69 @@ package main
 
 import (
 	"net/http"
+	"net/url"
+	"sort"
 	"time"
 
 	"github.com/cagnosolutions/adb"
 	"github.com/cagnosolutions/web"
 )
 
-var account = web.Route{"GET", "/account", func(w http.ResponseWriter, r *http.Request) {
+var dashboard = web.Route{"GET", "/dashboard", func(w http.ResponseWriter, r *http.Request) {
 
 	id := web.GetId(r)
 	var user User
-
-	//gets user and double checks that the user exists still
 	if !db.Get("user", id, &user) {
 		web.Logout(w)
 		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
 		return
 	}
 
-	//gets all transactions for an account
 	var transactions []Transaction
 	db.TestQuery("transaction", &transactions, adb.Eq("accountId", `"`+user.AccountId+`"`))
+	sort.Slice(transactions, func(i int, j int) bool {
+		return transactions[i].Date > transactions[j].Date
+	})
 
-	tmpl.Render(w, r, "account.tmpl", web.Model{
-		"transactions":  transactions,
-		"categoryViews": getCategoryView(user.AccountId),
-		"user":          user,
+	if len(transactions) > 10 {
+		transactions = transactions[:10]
+	}
+
+	var quickTransactions []Transaction
+	db.TestQuery("quickTransaction", &quickTransactions, adb.Eq("accountId", `"`+user.AccountId+`"`))
+
+	sort.Slice(quickTransactions, func(i int, j int) bool {
+		return quickTransactions[i].Title > quickTransactions[j].Title
+	})
+
+	tmpl.Render(w, r, "dashboard.tmpl", web.Model{
+		"transactions":      transactions,
+		"user":              user,
+		"quickTransactions": quickTransactions,
 	})
 
 	return
 }}
 
-var category = web.Route{"GET", "/category", func(w http.ResponseWriter, r *http.Request) {
-
+var transaction = web.Route{"GET", "/transaction", func(w http.ResponseWriter, r *http.Request) {
 	id := web.GetId(r)
 	var user User
-
-	// gets user and double checks that the user exists still
 	if !db.Get("user", id, &user) {
 		web.Logout(w)
 		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
 		return
 	}
 
-	// gets all budgetGroups for an account
-	/*var budgetGroups []BudgetGroup
-	db.TestQuery("budgetGroup", &budgetGroups, adb.Eq("accountId", `"`+user.AccountId+`"`))*/
+	var transactions []Transaction
+	db.TestQuery("transaction", &transactions, adb.Eq("accountId", `"`+user.AccountId+`"`))
 
-	// gets all budgetItems for an account
-	/*var budgetItems []BudgetItem
-	db.TestQuery("budgetItem", &budgetItems, adb.Eq("accountId", `"`+user.AccountId+`"`))*/
+	sort.Slice(transactions, func(i int, j int) bool {
+		return transactions[i].Date > transactions[j].Date
+	})
 
-	tmpl.Render(w, r, "category.tmpl", web.Model{
-		"categoryViews": getCategoryView(user.AccountId),
-		"user":          user,
+	tmpl.Render(w, r, "transaction.tmpl", web.Model{
+		"transactions": transactions,
+		"user":         user,
 	})
 
 	return
@@ -63,271 +72,164 @@ var category = web.Route{"GET", "/category", func(w http.ResponseWriter, r *http
 
 var transactionSave = web.Route{"POST", "/transaction", func(w http.ResponseWriter, r *http.Request) {
 
+	rUrl, err := url.Parse(r.Referer())
+	redirect := "/dashboard"
+	if err == nil {
+		redirect = rUrl.Path
+	}
+
 	id := web.GetId(r)
 	var user User
-
-	// gets user and double checks that the user exists still
 	if !db.Get("user", id, &user) {
 		web.Logout(w)
-		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
+		web.SetErrorRedirect(w, r, redirect, "Error retrieving user")
 		return
 	}
 
-	// parses form and throws it into a variable
 	var transaction Transaction
 	r.ParseForm()
 	if errs, ok := web.FormToStruct(&transaction, r.Form, "transaction"); !ok {
 		web.SetFormErrors(w, errs)
-		web.SetErrorRedirect(w, r, "/account", "Error saving transaction")
+		web.SetErrorRedirect(w, r, redirect, "Error saving transaction")
 		return
 	}
-	// assign non parsed fields
+
+	t, err := time.Parse("1/2/2006", r.FormValue("dateString"))
+	if err != nil {
+		web.SetErrorRedirect(w, r, redirect, "Error getting date")
+		return
+	}
+
+	transaction.Date = t.UnixNano()
 	transaction.Id = genId()
 	transaction.UserId = user.Id
 	transaction.AccountId = user.AccountId
-	transaction.Date = time.Now().Unix()
+	transaction.DateAdded = time.Now().UnixNano()
 
-	// save to db with err check
+	/*if transaction.Category != "" {
+		transaction.Category = NormalIzeString(transaction.Category)
+		user.Categories[transaction.Category] = struct{}{}
+		category := Category{
+			Id:            genId(),
+			AccountId:     user.AccountId,
+			Title:         transaction.Category,
+			TransactionId: transaction.Id,
+		}
+
+		db.Add("category", category.Id, category)
+		transaction.CategoryId = category.Id
+	}
+
+	if transaction.SecondaryCategory != "" {
+		transaction.SecondaryCategory = NormalIzeString(transaction.SecondaryCategory)
+		user.Categories[transaction.SecondaryCategory] = struct{}{}
+		secondaryCategory := Category{
+			Id:            genId(),
+			AccountId:     user.AccountId,
+			Title:         transaction.SecondaryCategory,
+			TransactionId: transaction.Id,
+		}
+
+		db.Add("category", secondaryCategory.Id, secondaryCategory)
+		transaction.SecondaryCategoryId = secondaryCategory.Id
+	}*/
+
+	if user.Categories == nil {
+		user.Categories = map[string]struct{}{}
+	}
+
+	if user.People == nil {
+		user.People = map[string]struct{}{}
+	}
+
+	if transaction.Category != "" {
+		transaction.Category = NormalIzeString(transaction.Category)
+		user.Categories[transaction.Category] = struct{}{}
+	}
+	if transaction.SecondaryCategory != "" {
+		transaction.SecondaryCategory = NormalIzeString(transaction.SecondaryCategory)
+		user.Categories[transaction.SecondaryCategory] = struct{}{}
+	}
+	if transaction.Who != "" {
+		transaction.Who = NormalIzeString(transaction.Who)
+		user.People[transaction.Who] = struct{}{}
+	}
+
 	if !db.Add("transaction", transaction.Id, transaction) {
-		web.SetErrorRedirect(w, r, "/account", "Error saving transcation")
-		return
-	}
-	web.SetSuccessRedirect(w, r, "/account", "Transaction Added")
-
-}}
-
-var subcategorySave = web.Route{"POST", "/subcategory", func(w http.ResponseWriter, r *http.Request) {
-
-	id := web.GetId(r)
-	var user User
-
-	// gets user and double checks that the user exists still
-	if !db.Get("user", id, &user) {
-		web.Logout(w)
-		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
+		web.SetErrorRedirect(w, r, redirect, "Error saving transaction")
 		return
 	}
 
-	// err check for empty formvalue
-	var subcategory Subcategory
-	if r.FormValue("title") == "" {
-		web.SetErrorRedirect(w, r, "/category", "Error saving subcategory")
+	db.Set("user", user.Id, user)
+
+	if r.FormValue("save") == "save" {
+		var quickTransactions []Transaction
+		db.TestQuery("quickTransaction", &quickTransactions, adb.Eq("title", transaction.Title))
+		if len(quickTransactions) > 0 {
+			web.SetErrorRedirect(w, r, redirect, "Successfully added transaction.\nFailed to save as quick transaction\nA quick transaction already exists with that title")
+			return
+		}
+		quickTransaction := transaction
+		quickTransaction.Id = genId()
+		quickTransaction.DateAdded = 0
+		quickTransaction.Date = 0
+		if !db.Add("quickTransaction", quickTransaction.Id, quickTransaction) {
+			web.SetErrorRedirect(w, r, redirect, "Successfully added transaction.\nFailed to save as quick transaction")
+			return
+		}
+		transaction.QuickTransactionId = quickTransaction.Id
+		db.Set("transaction", transaction.Id, transaction)
+		web.SetSuccessRedirect(w, r, redirect, "Transaction Added and quick transaction created")
 		return
 	}
-	// assign fields
-	subcategory.Id = genId()
-	subcategory.AccountId = user.AccountId
-	subcategory.CategoryId = r.FormValue("categoryId")
-	subcategory.Title = r.FormValue("title")
-
-	// save to db with err check
-	if !db.Add("subcategory", subcategory.Id, subcategory) {
-		web.SetErrorRedirect(w, r, "/category", "Error saving subcategory")
-		return
-	}
-	web.SetSuccessRedirect(w, r, "/category", "Subcategory Added")
-
-}}
-
-var categorySave = web.Route{"POST", "/category", func(w http.ResponseWriter, r *http.Request) {
-
-	id := web.GetId(r)
-	var user User
-
-	// gets user and double checks that the user exists still
-	if !db.Get("user", id, &user) {
-		web.Logout(w)
-		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
-		return
-	}
-
-	// parses form and throws it into a variable
-	var category Category
-	r.ParseForm()
-	if errs, ok := web.FormToStruct(&category, r.Form, "category"); !ok {
-		web.SetFormErrors(w, errs)
-		web.SetErrorRedirect(w, r, "/category", "Error saving category")
-		return
-	}
-	// assign non parsed fields
-	category.Id = genId()
-	category.AccountId = user.AccountId
-
-	// save to db with err check
-	if !db.Add("category", category.Id, category) {
-		web.SetErrorRedirect(w, r, "/category", "Error saving category")
-		return
-	}
-	web.SetSuccessRedirect(w, r, "/category", "Category Added")
-
-}}
-
-var categoryDel = web.Route{"POST", "/category/:id/del", func(w http.ResponseWriter, r *http.Request) {
-
-	var category Category
-	var subcategories []Subcategory
-
-	id := web.GetId(r)
-	var user User
-
-	// gets user and double checks that the user exists still
-	if !db.Get("user", id, &user) {
-		web.Logout(w)
-		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
-		return
-	}
-
-	// gets category from id in url
-	db.Get("category", r.FormValue(":id"), &category)
-
-	// err checks for ownership of account
-	if user.AccountId != category.AccountId {
-		web.SetErrorRedirect(w, r, "/category", "Error deleting, Please try again")
-		return
-	}
-
-	// queries for subcategories with a matching categoryid
-	db.TestQuery("subcategory", &subcategories, adb.Eq("categoryId", `"`+category.Id+`"`))
-
-	// loops to delete subcateogries
-	for _, item := range subcategories {
-		db.Del("subcategory", item.Id)
-	}
-
-	// deletes category
-	db.Del("category", category.Id)
-
-	web.SetSuccessRedirect(w, r, "/category", "Cateogry Deleted")
-
-	return
-
-}}
-
-var subcategoryDel = web.Route{"POST", "/subcategory/:id/del", func(w http.ResponseWriter, r *http.Request) {
-
-	id := web.GetId(r)
-	var user User
-	var subcategory Subcategory
-
-	// gets user and double checks that the user exists still
-	if !db.Get("user", id, &user) {
-		web.Logout(w)
-		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
-		return
-	}
-
-	// gets subcategory from id in url
-	db.Get("subcategory", r.FormValue(":id"), &subcategory)
-
-	// err checks for ownership of account
-	if user.AccountId != subcategory.AccountId {
-		web.SetErrorRedirect(w, r, "/category", "Error deleting subcategory, Please try again")
-		return
-	}
-
-	// deletes subcategory
-	db.Del("subcategory", subcategory.Id)
-
-	web.SetSuccessRedirect(w, r, "/category", "Subcategory Deleted")
-
-	return
-
-}}
-
-var subcategoryRename = web.Route{"POST", "/subcategory/:id/rename", func(w http.ResponseWriter, r *http.Request) {
-
-	id := web.GetId(r)
-	var user User
-	var subcategory Subcategory
-
-	// gets user and double checks that the user exists still
-	if !db.Get("user", id, &user) {
-		web.Logout(w)
-		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
-		return
-	}
-
-	// gets subcategory from id in url
-	db.Get("subcategory", r.FormValue(":id"), &subcategory)
-
-	// err checks for ownership of account
-	if user.AccountId != subcategory.AccountId {
-		web.SetErrorRedirect(w, r, "/category", "Error renaming subcategory, Please try again")
-		return
-	}
-
-	// assigns new subcategory title
-	subcategory.Title = r.FormValue("title")
-
-	// saves changes to the db
-	db.Set("subcategory", subcategory.Id, subcategory)
-
-	web.SetSuccessRedirect(w, r, "/category", "Subcategory Renamed")
-
+	web.SetSuccessRedirect(w, r, redirect, "Transaction Added")
 	return
 }}
 
-var categoryRename = web.Route{"POST", "/category", func(w http.ResponseWriter, r *http.Request) {
+/*var transactionFilter = web.Route{"POST", "/transaction/filter", func(w http.ResponseWriter, r *http.Request) {
 
-	id := web.GetId(r)
-	var user User
-	var category Category
+	resp := map[string]interface{}{}
 
-	// gets user and double checks that the user exists still
-	if !db.Get("user", id, &user) {
-		web.Logout(w)
-		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
-		return
-	}
-	// gets category from id in url
-	db.Get("category", r.FormValue(":id"), &category)
+	tme := r.FormValue("time")
+	aType := r.FormValue("aType")
+	category1 := r.FormValue("category1")
+	category2 := r.FormValue("category2")
 
-	// err checks for ownership of account
-	if user.AccountId != category.AccountId {
-		web.SetErrorRedirect(w, r, "/category", "Error renaming category, Please try again")
-		return
-	}
+	var fullQuery [][]byte
 
-	// assigns new category title
-	category.Title = r.FormValue("title")
+	fullQuery = append(fullQuery, adb.Eq("key", val))
 
-	// saves changes to the db
-	db.Set("category", category.Id, category)
-
-	web.SetSuccessRedirect(w, r, "/category", "Category Renamed")
-
-	return
-
-}}
-
-var subcategoryMove = web.Route{"POST", "/subcategory/:id/move", func(w http.ResponseWriter, r *http.Request) {
-
-	id := web.GetId(r)
-	var user User
-	var subcategory Subcategory
-
-	// gets user and double checks that the user exists still
-	if !db.Get("user", id, &user) {
-		web.Logout(w)
-		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
-		return
+	switch aType {
+	case "income":
+		fullQuery = append(fullQuery, adb.Gt("ammount", "0"))
+	case "expense":
+		fullQuery = append(fullQuery, adb.Lt("ammount", "0"))
 	}
 
-	// gets subcategory from id in url
-	db.Get("subcategory", r.FormValue(":id"), &subcategory)
+	var beg, end int64
+	loc, _ := time.LoadLocation("Local")
+	now := time.Now()
+	end = now.Unix() + 1
+	switch tme {
+	case "week":
 
-	// err checks for ownership of account
-	if user.AccountId != subcategory.AccountId {
-		web.SetErrorRedirect(w, r, "/category", "Error moving subcategory, Please try again")
-		return
+	case "":
+		begDate := time.Date(now.Year(), now.Month()-1, 1, 0, 0, 0, 0, loc)
+		beg = begDate.Unix() - 1
+	case "3months":
+		begDate := time.Date(now.Year(), now.Month()-3, 1, 0, 0, 0, 0, loc)
+		beg = begDate.Unix() - 1
+	case "6months":
+		begDate := time.Date(now.Year(), now.Month()-6, 1, 0, 0, 0, 0, loc)
+		beg = begDate.Unix() - 1
+	case "12months":
+		begDate := time.Date(now.Year()-1, now.Month(), 1, 0, 0, 0, 0, loc)
+		beg = begDate.Unix() - 1
+	case "all":
+		beg = 0
 	}
-	// assigns new category id
-	subcategory.CategoryId = r.FormValue("categoryId")
 
-	// saves changes to the db
-	db.Set("subcategory", subcategory.Id, subcategory)
+	var transactions []Transaction
+	db.TestQuery("transaction", &transaction, adb.Gt("date", strconv.Itoa(beg)), adb.Lt("date", strconv.ItoA(end)))
 
-	web.SetSuccessRedirect(w, r, "/category", "Subcategory Moved")
-
-	return
-}}
+}}*/
