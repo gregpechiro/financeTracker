@@ -83,8 +83,8 @@ var register = web.Route{"POST", "/register", func(w http.ResponseWriter, r *htt
 }}
 
 var logout = web.Route{"GET", "/logout", func(w http.ResponseWriter, r *http.Request) {
-	//logout
+
 	web.Logout(w)
-	web.SetSuccessRedirect(w, r, "/login", "Goodbye")
+	http.Redirect(w, r, "/login", 303)
 	return
 }}

@@ -38,8 +38,8 @@ var dashboard = web.Route{"GET", "/dashboard", func(w http.ResponseWriter, r *ht
 	})
 
 	tmpl.Render(w, r, "dashboard.tmpl", web.Model{
-		"transactions":      transactions,
 		"user":              user,
+		"transactions":      transactions,
 		"quickTransactions": quickTransactions,
 	})
 
@@ -62,9 +62,17 @@ var transaction = web.Route{"GET", "/transaction", func(w http.ResponseWriter, r
 		return transactions[i].Date > transactions[j].Date
 	})
 
+	var quickTransactions []Transaction
+	db.TestQuery("quickTransaction", &quickTransactions, adb.Eq("accountId", `"`+user.AccountId+`"`))
+
+	sort.Slice(quickTransactions, func(i int, j int) bool {
+		return quickTransactions[i].Title > quickTransactions[j].Title
+	})
+
 	tmpl.Render(w, r, "transaction.tmpl", web.Model{
-		"transactions": transactions,
-		"user":         user,
+		"user":              user,
+		"transactions":      transactions,
+		"quickTransactions": quickTransactions,
 	})
 
 	return
@@ -72,8 +80,8 @@ var transaction = web.Route{"GET", "/transaction", func(w http.ResponseWriter, r
 
 var transactionSave = web.Route{"POST", "/transaction", func(w http.ResponseWriter, r *http.Request) {
 
-	rUrl, err := url.Parse(r.Referer())
 	redirect := "/dashboard"
+	rUrl, err := url.Parse(r.Referer())
 	if err == nil {
 		redirect = rUrl.Path
 	}
@@ -87,52 +95,28 @@ var transactionSave = web.Route{"POST", "/transaction", func(w http.ResponseWrit
 	}
 
 	var transaction Transaction
+	db.Get("transaction", r.FormValue("id"), &transaction)
+
 	r.ParseForm()
-	if errs, ok := web.FormToStruct(&transaction, r.Form, "transaction"); !ok {
+	if errs, ok := web.FormToStruct(&transaction, r.Form, ""); !ok {
 		web.SetFormErrors(w, errs)
 		web.SetErrorRedirect(w, r, redirect, "Error saving transaction")
 		return
 	}
 
-	t, err := time.Parse("1/2/2006", r.FormValue("dateString"))
+	t, err := time.ParseInLocation("1/2/2006", r.FormValue("dateString"), time.Local)
 	if err != nil {
 		web.SetErrorRedirect(w, r, redirect, "Error getting date")
 		return
 	}
+	transaction.Date = t.Unix()
 
-	transaction.Date = t.UnixNano()
-	transaction.Id = genId()
-	transaction.UserId = user.Id
-	transaction.AccountId = user.AccountId
-	transaction.DateAdded = time.Now().UnixNano()
-
-	/*if transaction.Category != "" {
-		transaction.Category = NormalIzeString(transaction.Category)
-		user.Categories[transaction.Category] = struct{}{}
-		category := Category{
-			Id:            genId(),
-			AccountId:     user.AccountId,
-			Title:         transaction.Category,
-			TransactionId: transaction.Id,
-		}
-
-		db.Add("category", category.Id, category)
-		transaction.CategoryId = category.Id
+	if transaction.Id == "" {
+		transaction.Id = genId()
+		transaction.UserId = user.Id
+		transaction.AccountId = user.AccountId
+		transaction.DateAdded = time.Now().Unix()
 	}
-
-	if transaction.SecondaryCategory != "" {
-		transaction.SecondaryCategory = NormalIzeString(transaction.SecondaryCategory)
-		user.Categories[transaction.SecondaryCategory] = struct{}{}
-		secondaryCategory := Category{
-			Id:            genId(),
-			AccountId:     user.AccountId,
-			Title:         transaction.SecondaryCategory,
-			TransactionId: transaction.Id,
-		}
-
-		db.Add("category", secondaryCategory.Id, secondaryCategory)
-		transaction.SecondaryCategoryId = secondaryCategory.Id
-	}*/
 
 	if user.Categories == nil {
 		user.Categories = map[string]struct{}{}
@@ -155,7 +139,7 @@ var transactionSave = web.Route{"POST", "/transaction", func(w http.ResponseWrit
 		user.People[transaction.Who] = struct{}{}
 	}
 
-	if !db.Add("transaction", transaction.Id, transaction) {
+	if !db.Set("transaction", transaction.Id, transaction) {
 		web.SetErrorRedirect(w, r, redirect, "Error saving transaction")
 		return
 	}
@@ -182,54 +166,107 @@ var transactionSave = web.Route{"POST", "/transaction", func(w http.ResponseWrit
 		web.SetSuccessRedirect(w, r, redirect, "Transaction Added and quick transaction created")
 		return
 	}
-	web.SetSuccessRedirect(w, r, redirect, "Transaction Added")
+	web.SetSuccessRedirect(w, r, redirect, "Transaction Saved")
 	return
 }}
 
-/*var transactionFilter = web.Route{"POST", "/transaction/filter", func(w http.ResponseWriter, r *http.Request) {
-
-	resp := map[string]interface{}{}
-
-	tme := r.FormValue("time")
-	aType := r.FormValue("aType")
-	category1 := r.FormValue("category1")
-	category2 := r.FormValue("category2")
-
-	var fullQuery [][]byte
-
-	fullQuery = append(fullQuery, adb.Eq("key", val))
-
-	switch aType {
-	case "income":
-		fullQuery = append(fullQuery, adb.Gt("ammount", "0"))
-	case "expense":
-		fullQuery = append(fullQuery, adb.Lt("ammount", "0"))
+var quickTransaction = web.Route{"GET", "/quickTransaction", func(w http.ResponseWriter, r *http.Request) {
+	id := web.GetId(r)
+	var user User
+	if !db.Get("user", id, &user) {
+		web.Logout(w)
+		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
+		return
 	}
 
-	var beg, end int64
-	loc, _ := time.LoadLocation("Local")
-	now := time.Now()
-	end = now.Unix() + 1
-	switch tme {
-	case "week":
+	var quickTransactions []Transaction
+	db.TestQuery("quickTransaction", &quickTransactions, adb.Eq("accountId", `"`+user.AccountId+`"`))
 
-	case "":
-		begDate := time.Date(now.Year(), now.Month()-1, 1, 0, 0, 0, 0, loc)
-		beg = begDate.Unix() - 1
-	case "3months":
-		begDate := time.Date(now.Year(), now.Month()-3, 1, 0, 0, 0, 0, loc)
-		beg = begDate.Unix() - 1
-	case "6months":
-		begDate := time.Date(now.Year(), now.Month()-6, 1, 0, 0, 0, 0, loc)
-		beg = begDate.Unix() - 1
-	case "12months":
-		begDate := time.Date(now.Year()-1, now.Month(), 1, 0, 0, 0, 0, loc)
-		beg = begDate.Unix() - 1
-	case "all":
-		beg = 0
+	sort.Slice(quickTransactions, func(i int, j int) bool {
+		return quickTransactions[i].Title > quickTransactions[j].Title
+	})
+
+	tmpl.Render(w, r, "quickTransaction.tmpl", web.Model{
+		"user":              user,
+		"quickTransactions": quickTransactions,
+	})
+}}
+
+var quickTransacitonSave = web.Route{"POST", "/quickTransaction", func(w http.ResponseWriter, r *http.Request) {
+
+	id := web.GetId(r)
+	var user User
+	if !db.Get("user", id, &user) {
+		web.Logout(w)
+		web.SetErrorRedirect(w, r, "/quickTransaction", "Error retrieving user")
+		return
 	}
 
-	var transactions []Transaction
-	db.TestQuery("transaction", &transaction, adb.Gt("date", strconv.Itoa(beg)), adb.Lt("date", strconv.ItoA(end)))
+	var quickTransaction Transaction
+	db.Get("quickTransaction", r.FormValue("id"), &quickTransaction)
 
-}}*/
+	r.ParseForm()
+	if errs, ok := web.FormToStruct(&quickTransaction, r.Form, ""); !ok {
+		web.SetFormErrors(w, errs)
+		web.SetErrorRedirect(w, r, "/quickTransaction", "Error saving quick quickTransaction")
+		return
+	}
+
+	var quickTransactions []Transaction
+	db.TestQuery("quickTransaction", &quickTransactions, adb.Eq("title", quickTransaction.Title), adb.Ne("id", `"`+quickTransaction.Id+`"`))
+	if len(quickTransactions) > 0 {
+		web.SetErrorRedirect(w, r, "/quickTransaction", "Failed to save quick quickTransaction\nA quick quickTransaction already exists with that title")
+		return
+	}
+
+	if quickTransaction.Id == "" {
+		quickTransaction.Id = genId()
+		quickTransaction.UserId = user.Id
+		quickTransaction.AccountId = user.AccountId
+		quickTransaction.DateAdded = time.Now().Unix()
+	}
+
+	if user.Categories == nil {
+		user.Categories = map[string]struct{}{}
+	}
+
+	if user.People == nil {
+		user.People = map[string]struct{}{}
+	}
+
+	if quickTransaction.Category != "" {
+		quickTransaction.Category = NormalIzeString(quickTransaction.Category)
+		user.Categories[quickTransaction.Category] = struct{}{}
+	}
+	if quickTransaction.SecondaryCategory != "" {
+		quickTransaction.SecondaryCategory = NormalIzeString(quickTransaction.SecondaryCategory)
+		user.Categories[quickTransaction.SecondaryCategory] = struct{}{}
+	}
+	if quickTransaction.Who != "" {
+		quickTransaction.Who = NormalIzeString(quickTransaction.Who)
+		user.People[quickTransaction.Who] = struct{}{}
+	}
+
+	if !db.Set("quickTransaction", quickTransaction.Id, quickTransaction) {
+		web.SetErrorRedirect(w, r, "/quickTransaction", "Error saving quick transaction")
+		return
+	}
+	if quickTransaction.Id != "" {
+		var transactions []Transaction
+		db.TestQuery("transaction", &transactions, adb.Eq("quickTransactionId", `"`+quickTransaction.Id+`"`))
+		for _, transaction := range transactions {
+			transaction.Title = quickTransaction.Title
+			transaction.Description = quickTransaction.Description
+			transaction.Who = quickTransaction.Who
+			transaction.Category = quickTransaction.Category
+			transaction.SecondaryCategory = quickTransaction.SecondaryCategory
+
+			db.Set("transaction", transaction.Id, transaction)
+		}
+	}
+	db.Set("user", user.Id, user)
+
+	web.SetSuccessRedirect(w, r, "/quickTransaction", "Successfully saved quick transaction")
+	return
+
+}}

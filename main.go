@@ -30,13 +30,14 @@ func init() {
 	mux.AddRoutes(home, login, logout, loginPost, register, updateSession)
 
 	//secured routes
-	mux.AddSecureRoutes(USER, dashboard, transaction, transactionSave)
+	mux.AddSecureRoutes(USER, dashboard, transaction, transactionSave, quickTransaction, quickTransacitonSave)
 
 	web.Funcs["OrderCategories"] = OrderCategories
 	web.Funcs["Title"] = strings.Title
 	web.Funcs["PrettyDate"] = PrettyDate
 	web.Funcs["isIncome"] = isIncome
 	web.Funcs["toJson"] = toJson
+	web.Funcs["toBase64Json"] = toBase64Json
 
 	tmpl = web.NewTmplCache()
 }

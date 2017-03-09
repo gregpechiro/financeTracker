@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -31,8 +32,8 @@ func PrettyDate(ts int64) string {
 	if ts == 0 {
 		return ""
 	}
-	t := time.Unix(0, ts)
-	return t.Format("01/02/2006")
+	t := time.Unix(ts, 0)
+	return t.Format("1/2/2006")
 }
 
 func isIncome(ammount float32) bool {
@@ -55,4 +56,12 @@ func toJson(v interface{}) string {
 		return ""
 	}
 	return string(b)
+}
+
+func toBase64Json(v interface{}) string {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return ""
+	}
+	return base64.StdEncoding.EncodeToString(b)
 }

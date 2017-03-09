@@ -1,9 +1,14 @@
-$(document).on('click', 'tr.clickable', function() {
-    if (this.getAttribute('data-target') === '_blank') {
-        window.open(this.getAttribute('data-url'));
+
+var TRCLICK = function(tr) {
+    if (tr.getAttribute('data-target') === '_blank') {
+        window.open(tr.getAttribute('data-url'));
         return
     }
-    window.location.href = this.getAttribute('data-url');
+    window.location.href = tr.getAttribute('data-url');
+}
+
+$(document).on('click', 'tr.clickable', function() {
+    TRCLICK(this);
 });
 
 $('#filter').on( 'keyup', function () {

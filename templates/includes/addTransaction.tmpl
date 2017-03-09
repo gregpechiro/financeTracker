@@ -24,13 +24,13 @@
                     <div class="form-group">
                         <label class="col-xs-4 control-label">Title</label>
                         <div class="col-xs-8">
-                            <input class="form-control" type="text" name="title">
+                            <input id="title" class="form-control" type="text" name="title">
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="col-xs-4 control-label">Description</label>
                         <div class="col-xs-8">
-                            <input class="form-control" type="text" name="description">
+                            <input id="description" class="form-control" type="text" name="description">
                         </div>
                     </div>
                     <div class="form-group">
@@ -43,7 +43,7 @@
                         <label class="col-lg-4 control-label">Date</label>
                         <div class="col-lg-8">
                             <div class="input-group">
-                                <input type="text" class="form-control datepicker" name="dateString" placeholder="Date">
+                                <input id="date" type="text" class="form-control datepicker" name="dateString" placeholder="Date">
                                 <span class="input-group-addon calander"><i class="glyphicon glyphicon-calendar"></i></span>
                             </div>
                         </div>
@@ -53,13 +53,13 @@
                         <label class="col-xs-4 control-label">Who</label>
                         <div class="col-xs-8">
                             <div class="input-group">
-                                <select class="form-control category">
+                                <select id="who" class="form-control category">
                                     <option value="">None</option>
                                     {{ range $who := OrderCategories .user.People }}
                                         <option value="{{ $who }}">{{ Title $who }}</option>
                                     {{ end }}
                                 </select>
-                                <input type="text" class="form-control hide category" name="who" value="">
+                                <input id="who" type="text" class="form-control hide category" name="who" value="">
                                 <span class="input-group-btn">
                                     <button class="btn btn-default category" type="button">Add</button>
                                 </span>
@@ -70,13 +70,13 @@
                         <label class="col-xs-4 control-label">Category</label>
                         <div class="col-xs-8">
                             <div class="input-group">
-                                <select class="form-control category">
+                                <select id="category" class="form-control category">
                                     <option value="">None</option>
                                     {{ range $category := OrderCategories .user.Categories }}
                                         <option value="{{ $category }}">{{ Title $category }}</option>
                                     {{ end }}
                                 </select>
-                                <input type="text" class="form-control hide category" name="category" value="">
+                                <input id="category" type="text" class="form-control hide category" name="category" value="">
                                 <span class="input-group-btn">
                                     <button class="btn btn-default category" type="button">Add</button>
                                 </span>
@@ -87,13 +87,13 @@
                         <label class="col-xs-4 control-label">Secondary Category</label>
                         <div class="col-xs-8">
                             <div class="input-group">
-                                <select class="form-control category">
+                                <select id="secondaryCategory" class="form-control category">
                                     <option value="">None</option>
                                     {{ range $category := OrderCategories .user.Categories }}
                                         <option value="{{ $category }}">{{ Title $category }}</option>
                                     {{ end }}
                                 </select>
-                                <input type="text" class="form-control hide category" name="secondaryCategory" value="">
+                                <input id="secondaryCategory" type="text" class="form-control hide category" name="secondaryCategory" value="">
                                 <span class="input-group-btn">
                                     <button class="btn btn-default category" type="button">Add</button>
                                 </span>
@@ -117,6 +117,7 @@
                             <button class="btn btn-success btn-block">Income</button>
                         </div>
                     </div>
+                    <input id="id" class="hide" name="id" value="">
                 </form>
 
                 <form id="quickTransactionForm" class="form-horizontal hide" action="/transaction" method="post">
@@ -124,14 +125,14 @@
                         <label class="col-xs-4 control-label">Title</label>
                         <div class="col-xs-8">
                             <div id="title" class="display-value"></div>
-                            <input id="title" class="form-control" type="hidden" name="title">
+                            <input id="title" class="form-control hide" name="title">
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="col-xs-4 control-label">Description</label>
                         <div class="col-xs-8">
                             <div id="description" class="display-value"></div>
-                            <input id="description" class="form-control" type="hidden" name="description">
+                            <input id="description" class="form-control hide" name="description">
                         </div>
                     </div>
                     <div class="form-group">
@@ -144,7 +145,7 @@
                         <label class="col-lg-4 control-label">Date</label>
                         <div class="col-lg-8">
                             <div class="input-group">
-                                <input type="text" class="form-control datepicker" name="dateString" placeholder="Date">
+                                <input id="date" type="text" class="form-control datepicker" name="dateString" placeholder="Date">
                                 <span class="input-group-addon calander"><i class="glyphicon glyphicon-calendar"></i></span>
                             </div>
                         </div>
@@ -154,21 +155,21 @@
                         <label class="col-xs-4 control-label">Who</label>
                         <div class="col-xs-8">
                             <div id="who" class="display-value"></div>
-                            <input id="who" type="hidden" class="form-control category">
+                            <input id="who" name="who" class="form-control hide category">
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="col-xs-4 control-label">Category</label>
                         <div class="col-xs-8">
                             <div id="category" class="display-value"></div>
-                            <input id="category" type="hidden" class="form-control category">
+                            <input id="category" name="category" class="form-control hide category">
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="col-xs-4 control-label">Secondary Category</label>
                         <div class="col-xs-8">
                             <div id="secondaryCategory" class="display-value"></div>
-                            <input id="secondaryCategory" type="hidden" class="form-control category">
+                            <input id="secondaryCategory" name="secondaryCategory" class="form-control hide category">
                         </div>
                     </div>
                     <div class="row">
@@ -179,6 +180,8 @@
                             <button class="btn btn-success btn-block income">Income</button>
                         </div>
                     </div>
+                    <input id="quickTransactionId" class="hide" name="quickTransactionId" value="">
+                    <input id="id" class="hide" name="id" value="">
                 </form>
 
             </div>
@@ -234,6 +237,7 @@
         var quickTransaction = quickTransactions[idx];
         $('form#quickTransactionForm input#title').val(quickTransaction.title);
         $('form#quickTransactionForm div#title').html(quickTransaction.title);
+
         $('form#quickTransactionForm input#description').val(quickTransaction.description);
         $('form#quickTransactionForm div#description').html(quickTransaction.description);
 
@@ -247,6 +251,8 @@
 
         $('form#quickTransactionForm input#secondaryCategory').val(quickTransaction.secondaryCategory);
         $('form#quickTransactionForm div#secondaryCategory').html(toTitleCase(quickTransaction.secondaryCategory));
+
+        $('form#quickTransactionForm input#quickTransactionId').val(quickTransaction.id);
 
         if (quickTransaction.ammount < 0) {
             $('form#quickTransactionForm .income').addClass('hide');
@@ -269,11 +275,61 @@
         $('form#quickTransactionForm').addClass('hide');
         $('form#transactionForm').removeClass('hide');
 
+        $("form#quickTransactionForm input#date").datepicker("update", new Date());
+        $("form#transactionForm input#date").datepicker("update", new Date());
+
         $('select#quickTransaction').val('');
     }
 
     $('#transactionModal').on('hidden.bs.modal', function() {
         resetTransaction();
     });
+
+    TRCLICK = editTransaction;
+
+    function editTransaction(tr) {
+        try {
+           transaction = JSON.parse(atob($(tr).attr('data-transaction')));
+        } catch(err) {
+            swal({
+                title: 'Error',
+                text: 'Error transaction note. Please refresh the page and try again',
+                type: 'warning',
+                showConfirmButton: false
+            });
+            return
+        }
+        var qIdx = quickTransactions.map(function(e) { return e.id; }).indexOf(transaction.quickTransactionId);
+        if (qIdx > -1) {
+            $('select#quickTransaction').val(qIdx);
+            $('select#quickTransaction').change();
+
+            $('form#quickTransactionForm input#ammount').val(Math.abs(transaction.ammount));
+            $("form#quickTransactionForm input#date").datepicker("update", new Date(transaction.date * 1000));
+            $('form#quickTransactionForm input#id').val(transaction.id)
+            $('#transactionModal').modal('show');
+            return
+
+        }
+
+        $('form#transactionForm input#title').val(transaction.title);
+        $('form#transactionForm input#description').val(transaction.description);
+        $('form#transactionForm input#ammount').val(Math.abs(transaction.ammount));
+        $("form#transactionForm input#date").datepicker("update", new Date(transaction.date * 1000));
+
+        $('form#transactionForm input#who').val(transaction.who);
+        $('form#transactionForm select#who').val(transaction.who);
+
+        $('form#transactionForm input#category').val(transaction.category);
+        $('form#transactionForm select#category').val(transaction.category);
+
+        $('form#transactionForm input#secondaryCategory').val(transaction.secondaryCategory);
+        $('form#transactionForm select#secondaryCategory').val(transaction.secondaryCategory);
+
+        $('form#transactionForm input#id').val(transaction.id)
+
+        $('#transactionModal').modal('show');
+
+    }
 
 </script>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {{ template "head.tmpl" . }}
+
+        <link rel="stylesheet" href="/static/css/datatables-bootstrap.css">
+        <link rel="stylesheet" href="/static/css/datatables-custom.css">
+        <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker3.min.css">
+
+        <title>Transactions</title>
+
+    </head>
+    <body>
+
+        {{ template "navbar.tmpl" . }}
+
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div>
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li><a href="/transaction">Transactions</a></li>
+                            <li class="active"><a>Quick Transactions</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-lg-12 col-xl-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading clearfix">
+                            All Quick Transactions
+                            <button class="btn btn-xs btn-default pull-right" data-toggle="modal" data-target="#transactionModal">Add</button>
+                        </div>
+                        <div class="panel-body">
+                            {{ if .quickTransactions }}
+                                <table id="transactions" class="table table-bordered table-hover" width="100%">
+                                    <thead>
+                                        <tr id="search">
+                                            <th>title</th>
+                                            <th>expense</th>
+                                            <th>income</th>
+                                            <th>who</th>
+                                            <th>category</th>
+                                            <th>secondaryCategory</th>
+                                        </tr>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Expense</th>
+                                            <th>Income</th>
+                                            <th>Who</th>
+                                            <th>Category</th>
+                                            <th>Secondary Category</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{ range $quickTransaction := .quickTransactions }}
+                                            <tr class="clickable" data-transaction="{{ toBase64Json $quickTransaction }}">
+                                                <td>{{ $quickTransaction.Title }}</td>
+                                                <td class="text-right">{{ if isIncome $quickTransaction.Ammount | not }}{{ printf "$%.2f" $quickTransaction.Ammount }}{{ end }}</td>
+                                                <td class="text-right">{{ if isIncome $quickTransaction.Ammount }}{{ printf "$%.2f" $quickTransaction.Ammount }}{{ end }}</td>
+                                                <td>{{ Title $quickTransaction.Who }}</td>
+                                                <td>{{ Title $quickTransaction.Category }}</td>
+                                                <td>{{ Title $quickTransaction.SecondaryCategory }}</td>
+                                            </tr>
+                                        {{ end }}
+                                    </tbody>
+                                </table>
+                            {{ else }}
+                                No transactions
+                            {{ end }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="transactionModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">Quick Transaction</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form id="transactionForm" class="form-horizontal" action="/quickTransaction" method="post">
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label">Title</label>
+                                <div class="col-xs-8">
+                                    <input id="title" class="form-control" type="text" name="title">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label">Description</label>
+                                <div class="col-xs-8">
+                                    <input id="description" class="form-control" type="text" name="description">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label">Ammount</label>
+                                <div class="col-xs-8">
+                                    <input id="ammount" class="form-control" type="text" name="ammount">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label">Who</label>
+                                <div class="col-xs-8">
+                                    <div class="input-group">
+                                        <select id="who" class="form-control category">
+                                            <option value="">None</option>
+                                            {{ range $who := OrderCategories .user.People }}
+                                                <option value="{{ $who }}">{{ Title $who }}</option>
+                                            {{ end }}
+                                        </select>
+                                        <input id="who" type="text" class="form-control hide category" name="who" value="">
+                                        <span class="input-group-btn">
+                                            <button class="btn btn-default category" type="button">Add</button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label">Category</label>
+                                <div class="col-xs-8">
+                                    <div class="input-group">
+                                        <select id="category" class="form-control category">
+                                            <option value="">None</option>
+                                            {{ range $category := OrderCategories .user.Categories }}
+                                                <option value="{{ $category }}">{{ Title $category }}</option>
+                                            {{ end }}
+                                        </select>
+                                        <input id="category" type="text" class="form-control hide category" name="category" value="">
+                                        <span class="input-group-btn">
+                                            <button class="btn btn-default category" type="button">Add</button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label">Secondary Category</label>
+                                <div class="col-xs-8">
+                                    <div class="input-group">
+                                        <select id="secondaryCategory" class="form-control category">
+                                            <option value="">None</option>
+                                            {{ range $category := OrderCategories .user.Categories }}
+                                                <option value="{{ $category }}">{{ Title $category }}</option>
+                                            {{ end }}
+                                        </select>
+                                        <input id="secondaryCategory" type="text" class="form-control hide category" name="secondaryCategory" value="">
+                                        <span class="input-group-btn">
+                                            <button class="btn btn-default category" type="button">Add</button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-offset-1 col-lg-4">
+                                    <a class="btn btn-danger btn-block expense">Expense</a>
+                                </div>
+                                <div class="col-lg-offset-2 col-lg-4">
+                                    <button class="btn btn-success btn-block">Income</button>
+                                </div>
+                            </div>
+                            <input id="id" class="hide" name="id" value="">
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{ template "scripts.tmpl" . }}
+        <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.min.js" charset="utf-8"></script>
+
+        {{ template "session.tmpl" . }}
+
+        <script src="//cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js" charset="utf-8"></script>
+        <script src="/static/js/datatables-bootstrap.js" charset="utf-8"></script>
+        <script src="/static/js/datatables-custom.js" charset="utf-8"></script>
+
+        <script type="text/javascript">
+
+            $('select.filter').change(function() {
+                table.draw()
+            });
+
+            var table = $('#transactions').DataTable({
+                "lengthMenu":[5, 10,15,20],
+                "pageLength": 10,
+                "columnDefs": [
+                    { "name": "title",               "targets": 0 },
+                    { "name": "expense",             "targets": 1 },
+                    { "name": "income",              "targets": 2 },
+                    { "name": "who",                 "targets": 3 },
+                    { "name": "category",            "targets": 4 },
+                    { "name": "secondaryCategory",   "targets": 5 }
+                ]
+
+            });
+
+            $('select.category').change(function() {
+                $(this).closest('div.input-group').find('input.category').val($(this).val());
+            });
+
+            $('button.category').click(function() {
+                var button = $(this);
+                var selector;
+                var input = button.closest('div.input-group').find('input.category');
+                var select = button.closest('div.input-group').find('select.category');
+                if (button.text() == 'Add') {
+                    input.removeClass('hide');
+                    select.addClass('hide');
+                    input.val('');
+                    button.text('Cancel');
+                    return
+                }
+                button.text('Add');
+                input.addClass('hide');
+                select.removeClass('hide');
+                input.val(select.Val());
+            });
+
+            $('a.expense').click(function() {
+                var form = $(this).closest('form');
+                var ammount = form.find('input#ammount');
+                ammount.val('-' + ammount.val());
+                form.submit();
+            });
+
+            function resetTransaction() {
+                $('form#transactionForm')[0].reset();
+            }
+
+            $('#transactionModal').on('hidden.bs.modal', function() {
+                resetTransaction();
+            });
+
+            TRCLICK = editTransaction;
+
+            function editTransaction(tr) {
+                try {
+                   transaction = JSON.parse(atob($(tr).attr('data-transaction')));
+                } catch(err) {
+                    swal({
+                        title: 'Error',
+                        text: 'Error transaction note. Please refresh the page and try again',
+                        type: 'warning',
+                        showConfirmButton: false
+                    });
+                    return
+                }
+
+                $('form#transactionForm input#title').val(transaction.title);
+                $('form#transactionForm input#description').val(transaction.description);
+                $('form#transactionForm input#ammount').val(Math.abs(transaction.ammount));
+
+                $('form#transactionForm input#who').val(transaction.who);
+                $('form#transactionForm select#who').val(transaction.who);
+
+                $('form#transactionForm input#category').val(transaction.category);
+                $('form#transactionForm select#category').val(transaction.category);
+
+                $('form#transactionForm input#secondaryCategory').val(transaction.secondaryCategory);
+                $('form#transactionForm select#secondaryCategory').val(transaction.secondaryCategory);
+
+                $('form#transactionForm input#id').val(transaction.id)
+
+                $('#transactionModal').modal('show');
+
+            }
+
+        </script>
+    </body>
+</html>
