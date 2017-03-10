@@ -29,8 +29,9 @@ func init() {
 	//unsecured routes
 	mux.AddRoutes(home, login, logout, loginPost, register, updateSession)
 
-	//secured routes
-	mux.AddSecureRoutes(USER, dashboard, transaction, transactionSave, quickTransaction, quickTransacitonSave)
+	// user routes
+	mux.AddSecureRoutes(USER, dashboard, account, accountSave, categorySave, categoryDel, whoSave, whoDel)
+	mux.AddSecureRoutes(USER, transaction, transactionSave, quickTransaction, quickTransacitonSave)
 
 	web.Funcs["OrderCategories"] = OrderCategories
 	web.Funcs["Title"] = strings.Title

@@ -46,6 +46,232 @@ var dashboard = web.Route{"GET", "/dashboard", func(w http.ResponseWriter, r *ht
 	return
 }}
 
+var account = web.Route{"GET", "/account", func(w http.ResponseWriter, r *http.Request) {
+	id := web.GetId(r)
+	var user User
+	if !db.Get("user", id, &user) {
+		web.Logout(w)
+		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
+		return
+	}
+	tmpl.Render(w, r, "account.tmpl", web.Model{
+		"user": user,
+	})
+}}
+
+var accountSave = web.Route{"POST", "/account", func(w http.ResponseWriter, r *http.Request) {
+	id := web.GetId(r)
+	var user User
+	if !db.Get("user", id, &user) {
+		web.Logout(w)
+		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
+		return
+	}
+	r.ParseForm()
+	if r.FormValue("password") == "" {
+		r.Form.Set("password", user.Password)
+	}
+	web.FormToStruct(&user, r.Form, "")
+
+	if errs, ok := web.FormToStruct(&user, r.Form, "account"); !ok {
+		web.SetFormErrors(w, errs)
+		web.SetErrorRedirect(w, r, "/account", "Error updating account information")
+		return
+	}
+
+	// check for uniqueness
+	var users []User
+	db.TestQuery("user", &users, adb.Eq("email", user.Email), adb.Ne("id", `"`+user.Id+`"`))
+	if len(users) > 0 {
+		web.SetErrorRedirect(w, r, "/account", "Error updating account information.<br>Email is already in use.")
+		return
+	}
+
+	db.Set("user", user.Id, user)
+	web.SetSuccessRedirect(w, r, "/account", "Successfully updated information")
+	return
+}}
+
+var categorySave = web.Route{"POST", "/category", func(w http.ResponseWriter, r *http.Request) {
+	id := web.GetId(r)
+	var user User
+	if !db.Get("user", id, &user) {
+		web.Logout(w)
+		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
+		return
+	}
+	oldCategory := NormalIzeString(r.FormValue("oldCategory"))
+	newCategory := NormalIzeString(r.FormValue("newCategory"))
+
+	if _, ok := user.Categories[oldCategory]; !ok {
+		web.SetErrorRedirect(w, r, "/account", "Error finding category")
+		return
+	}
+
+	if _, ok := user.Categories[newCategory]; ok {
+		web.SetErrorRedirect(w, r, "/account", "Error changing category<br>A category with that title already exists")
+		return
+	}
+
+	var transactions []Transaction
+
+	db.TestQuery("transaction", &transactions, adb.Eq("category", oldCategory))
+	for _, transaction := range transactions {
+		transaction.Category = newCategory
+		db.Set("transaction", transaction.Id, transaction)
+	}
+
+	db.TestQuery("transaction", &transactions, adb.Eq("secondaryCategory", oldCategory))
+	for _, transaction := range transactions {
+		transaction.SecondaryCategory = newCategory
+		db.Set("transaction", transaction.Id, transaction)
+	}
+
+	db.TestQuery("quickTransaction", &transactions, adb.Eq("category", oldCategory))
+	for _, transaction := range transactions {
+		transaction.Category = newCategory
+		db.Set("quickTransaction", transaction.Id, transaction)
+	}
+
+	db.TestQuery("quickTransaction", &transactions, adb.Eq("secondaryCategory", oldCategory))
+	for _, transaction := range transactions {
+		transaction.SecondaryCategory = newCategory
+		db.Set("quickTransaction", transaction.Id, transaction)
+	}
+
+	user.Categories[newCategory] = struct{}{}
+	delete(user.Categories, oldCategory)
+	db.Set("user", user.Id, user)
+	web.SetSuccessRedirect(w, r, "/account", "Successfully updated category")
+	return
+
+}}
+
+var categoryDel = web.Route{"POST", "/category/:name/del", func(w http.ResponseWriter, r *http.Request) {
+	id := web.GetId(r)
+	var user User
+	if !db.Get("user", id, &user) {
+		web.Logout(w)
+		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
+		return
+	}
+	category := NormalIzeString(r.FormValue(":name"))
+
+	if _, ok := user.Categories[category]; !ok {
+		web.SetErrorRedirect(w, r, "/account", "Error finding category")
+		return
+	}
+
+	var transactions []Transaction
+
+	db.TestQuery("transaction", &transactions, adb.Eq("category", category))
+	if len(transactions) > 0 {
+		web.SetErrorRedirect(w, r, "/account", "Error deleting category<br>It is still in use by a transaction<br>You must change the category before you can delete it")
+		return
+	}
+
+	db.TestQuery("transaction", &transactions, adb.Eq("secondaryCategory", category))
+	if len(transactions) > 0 {
+		web.SetErrorRedirect(w, r, "/account", "Error deleting category<br>It is still in use by a transaction<br>you must change the category before you can delete it")
+		return
+	}
+
+	db.TestQuery("quickTransaction", &transactions, adb.Eq("category", category))
+	if len(transactions) > 0 {
+		web.SetErrorRedirect(w, r, "/account", "Error deleting category<br>It is still in use by a quick transaction<br>you must change the category before you can delete it")
+		return
+	}
+
+	db.TestQuery("quickTransaction", &transactions, adb.Eq("secondaryCategory", category))
+	if len(transactions) > 0 {
+		web.SetErrorRedirect(w, r, "/account", "Error deleting category<br>It is still in use by a quick transaction<br>you must change the category before you can delete it")
+		return
+	}
+	delete(user.Categories, category)
+	db.Set("user", user.Id, user)
+	web.SetSuccessRedirect(w, r, "/account", "Successfully deleted category")
+	return
+
+}}
+
+var whoSave = web.Route{"POST", "/who", func(w http.ResponseWriter, r *http.Request) {
+	id := web.GetId(r)
+	var user User
+	if !db.Get("user", id, &user) {
+		web.Logout(w)
+		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
+		return
+	}
+	oldWho := NormalIzeString(r.FormValue("oldwho"))
+	newWho := NormalIzeString(r.FormValue("newwho"))
+
+	if _, ok := user.People[oldWho]; !ok {
+		web.SetErrorRedirect(w, r, "/account", "Error finding Who")
+		return
+	}
+
+	if _, ok := user.People[newWho]; ok {
+		web.SetErrorRedirect(w, r, "/account", "Error changing category<br>A who with that title already exists")
+		return
+	}
+
+	var transactions []Transaction
+
+	db.TestQuery("transaction", &transactions, adb.Eq("who", oldWho))
+	for _, transaction := range transactions {
+		transaction.Who = newWho
+		db.Set("transaction", transaction.Id, transaction)
+	}
+
+	db.TestQuery("quickTransaction", &transactions, adb.Eq("who", oldWho))
+	for _, transaction := range transactions {
+		transaction.Who = newWho
+		db.Set("quickTransaction", transaction.Id, transaction)
+	}
+
+	user.People[newWho] = struct{}{}
+	delete(user.People, oldWho)
+	db.Set("user", user.Id, user)
+	web.SetSuccessRedirect(w, r, "/account", "Successfully updated who")
+	return
+
+}}
+
+var whoDel = web.Route{"POST", "/who/:name/del", func(w http.ResponseWriter, r *http.Request) {
+	id := web.GetId(r)
+	var user User
+	if !db.Get("user", id, &user) {
+		web.Logout(w)
+		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
+		return
+	}
+	who := NormalIzeString(r.FormValue(":name"))
+	if _, ok := user.People[who]; !ok {
+		web.SetErrorRedirect(w, r, "/account", "Error finding who")
+		return
+	}
+
+	var transactions []Transaction
+
+	db.TestQuery("transaction", &transactions, adb.Eq("who", who))
+	if len(transactions) > 0 {
+		web.SetErrorRedirect(w, r, "/account", "Error deleting who<br>It is still in use by a transaction<br>You must change the who before you can delete it")
+		return
+	}
+
+	db.TestQuery("quickTransaction", &transactions, adb.Eq("who", who))
+	if len(transactions) > 0 {
+		web.SetErrorRedirect(w, r, "/account", "Error deleting who<br>It is still in use by a quick transaction<br>You must change the who before you can delete it")
+		return
+	}
+
+	delete(user.People, who)
+	db.Set("user", user.Id, user)
+	web.SetSuccessRedirect(w, r, "/account", "Successfully deleted who")
+	return
+
+}}
+
 var transaction = web.Route{"GET", "/transaction", func(w http.ResponseWriter, r *http.Request) {
 	id := web.GetId(r)
 	var user User
@@ -150,7 +376,7 @@ var transactionSave = web.Route{"POST", "/transaction", func(w http.ResponseWrit
 		var quickTransactions []Transaction
 		db.TestQuery("quickTransaction", &quickTransactions, adb.Eq("title", transaction.Title))
 		if len(quickTransactions) > 0 {
-			web.SetErrorRedirect(w, r, redirect, "Successfully added transaction.\nFailed to save as quick transaction\nA quick transaction already exists with that title")
+			web.SetErrorRedirect(w, r, redirect, "Successfully added transaction.<br>Failed to save as quick transaction<br>A quick transaction already exists with that title")
 			return
 		}
 		quickTransaction := transaction
@@ -158,7 +384,7 @@ var transactionSave = web.Route{"POST", "/transaction", func(w http.ResponseWrit
 		quickTransaction.DateAdded = 0
 		quickTransaction.Date = 0
 		if !db.Add("quickTransaction", quickTransaction.Id, quickTransaction) {
-			web.SetErrorRedirect(w, r, redirect, "Successfully added transaction.\nFailed to save as quick transaction")
+			web.SetErrorRedirect(w, r, redirect, "Successfully added transaction.<br>Failed to save as quick transaction")
 			return
 		}
 		transaction.QuickTransactionId = quickTransaction.Id
@@ -215,7 +441,7 @@ var quickTransacitonSave = web.Route{"POST", "/quickTransaction", func(w http.Re
 	var quickTransactions []Transaction
 	db.TestQuery("quickTransaction", &quickTransactions, adb.Eq("title", quickTransaction.Title), adb.Ne("id", `"`+quickTransaction.Id+`"`))
 	if len(quickTransactions) > 0 {
-		web.SetErrorRedirect(w, r, "/quickTransaction", "Failed to save quick quickTransaction\nA quick quickTransaction already exists with that title")
+		web.SetErrorRedirect(w, r, "/quickTransaction", "Failed to save quick quickTransaction<br>A quick quickTransaction already exists with that title")
 		return
 	}
 

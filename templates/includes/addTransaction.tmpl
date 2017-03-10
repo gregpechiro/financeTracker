@@ -8,8 +8,8 @@
             <div class="modal-body">
                 <div class="form-horizontal">
                     <div class="form-group">
-                        <label class="col-lg-4 control-label">Quick Transaction</label>
-                        <div class="col-lg-8">
+                        <label class="col-xs-5 control-label">Quick Transaction</label>
+                        <div class="col-xs-7">
                             <select id="quickTransaction" class="form-control">
                                 <option value="">None</option>
                                 {{ range $i, $quickTransaction := .quickTransactions }}
@@ -40,8 +40,8 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-lg-4 control-label">Date</label>
-                        <div class="col-lg-8">
+                        <label class="col-xs-4 control-label">Date</label>
+                        <div class="col-xs-8">
                             <div class="input-group">
                                 <input id="date" type="text" class="form-control datepicker" name="dateString" placeholder="Date">
                                 <span class="input-group-addon calander"><i class="glyphicon glyphicon-calendar"></i></span>
@@ -110,10 +110,10 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-lg-offset-1 col-lg-4">
+                        <div class="col-lg-offset-1 col-lg-4 col-xs-6" >
                             <a class="btn btn-danger btn-block expense">Expense</a>
                         </div>
-                        <div class="col-lg-offset-2 col-lg-4">
+                        <div class="col-lg-offset-2 col-lg-4 col-xs-6">
                             <button class="btn btn-success btn-block">Income</button>
                         </div>
                     </div>
@@ -142,8 +142,8 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-lg-4 control-label">Date</label>
-                        <div class="col-lg-8">
+                        <label class="col-xs-4 control-label">Date</label>
+                        <div class="col-xs-8">
                             <div class="input-group">
                                 <input id="date" type="text" class="form-control datepicker" name="dateString" placeholder="Date">
                                 <span class="input-group-addon calander"><i class="glyphicon glyphicon-calendar"></i></span>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {{ template "head.tmpl" . }}
+
+        <title>Account</title>
+
+    </head>
+    <body>
+
+        {{ template "navbar.tmpl" . }}
+
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            My Information
+                        </div>
+                        <div class="panel-body">
+                            <form class="form-horizontal" action="/account" method="post">
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">First Name</label>
+                                    <div class="col-xs-8">
+                                        <span class="text-danger">{{ getFormError .formErrors "account.firstName" }}</span>
+                                        <input class="form-control" type="text" name="firstName" value="{{ .user.FirstName }}">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">Last Name</label>
+                                    <div class="col-xs-8">
+                                        <span class="text-danger">{{ getFormError .formErrors "account.lastName" }}</span>
+                                        <input class="form-control" type="text" name="lastName" value="{{ .user.LastName }}">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">Email</label>
+                                    <div class="col-xs-8">
+                                        <span class="text-danger">{{ getFormError .formErrors "account.email" }}</span>
+                                        <input class="form-control" type="email" name="email" value="{{ .user.Email }}">
+                                    </div>
+                                </div>
+                                <!-- toggle show password input -->
+								<div class="form-group">
+									<label class="control-label col-xs-4">Password</label>
+									<div class="col-xs-8">
+                                        <span class="text-danger capsWarn hide">Caps Lock is On</span>
+										<div class="input-group">
+											<input type="password" id="password" name="password" class="form-control toggle-pass" placeholder="Password"/>
+											<span class="input-group-btn">
+												<button type="button" class="btn btn-default toggle-pass" data-toggle="tooltip" data-placement="right" title="Click to show/hide your password">
+													<i class="fa fa-eye-slash"></i>
+												</button>
+											</span>
+										</div>
+									</div>
+								</div>
+								<!-- toggle show password input -->
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">Phone</label>
+                                    <div class="col-xs-8">
+                                        <input class="form-control" type="text" name="phone" value="{{ .user.Phone }}">
+                                    </div>
+                                </div>
+                                <button class="btn btn-success btn-block">Save</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            People
+                        </div>
+                        <div class="panel-body">
+                            <div class="list-group">
+                                {{ range $person, $v := .user.People }}
+                                    <li class="list-group-item">{{ Title $person }}<button class="btn btn-danger btn-xs pull-right confirm-action" data-message="Are you sure you would like to delete this person?" data-color="#ff0000" data-url="/who/{{ $person }}/del" data-type="warning">Delete</button></li>
+                                {{ end }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            Categories
+                        </div>
+                        <div class="panel-body">
+                            <div class="list-group">
+                                {{ range $category, $v := .user.Categories }}
+                                    <li class="list-group-item">{{ Title $category }}<button class="btn btn-danger btn-xs pull-right confirm-action" data-message="Are you sure you would like to delete this category?" data-color="#ff0000" data-url="/category/{{ $category }}/del" data-type="warning">Delete</button></li>
+                                {{ end }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+         <form id="delete-form" class="hide" action="" method="post"></form>
+
+        {{ template "scripts.tmpl" . }}
+
+        {{ template "session.tmpl" . }}
+
+        <script type="text/javascript">
+            confirm.yes = function(btn) {
+                $('form#delete-form').attr('action', btn.attr('data-url'));
+                $('form#delete-form').submit();
+            }
+        </script>
+
+    </body>
+</html>

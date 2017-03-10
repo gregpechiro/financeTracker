@@ -3,7 +3,7 @@
     <head>
         {{ template "head.tmpl" . }}
 
-        <link rel="stylesheet" href="/static/css/datatables-bootstrap.css">
+        <link rel="stylesheet" href="//cdn.datatables.net/1.10.13/css/dataTables.bootstrap.min.css">
         <link rel="stylesheet" href="/static/css/datatables-custom.css">
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker3.min.css">
 
@@ -29,13 +29,12 @@
             <div class="row">
                 <div class="col-lg-2 col-xl-2">
                     <label>Time</label>
-                    <select class="form-control filter" name="time">
-                        <option value="week">One Week</option>
+                    <select id="rangeType" class="form-control" name="time">
                         <option value="1month" selected>One Month</option>
-                        <option value="3months">3 Months</option>
-                        <option value="6months">6 Months</option>
-                        <option value="12months">Year</option>
-                        <option value="all">All</option>
+                        <option value="3month">3 Months</option>
+                        <option value="6month">6 Months</option>
+                        <option value="year">Year</option>
+                        <option value="pick">Pick Dates</option>
                     </select>
                 </div>
                 <div class="col-lg-2 col-xl-2">
@@ -72,8 +71,9 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-lg-4">
-                    <ul class="pagination" style="width:100%">
+                <div class="col-lg-5">
+
+                    <ul id="dateRange" class="pagination" style="width:100%; border:1px solid black">
                         <li>
                             <a id="rangePrev" style="cursor:pointer;" aria-label="Previous">
                                 <span aria-hidden="true">&laquo;</span>
@@ -84,13 +84,31 @@
                                 <i class="fa fa-refresh"></i>
                             </a>
                         </li>
-                        <li><a id="range" style="width:60%" class="text-center"></a></li>
+                        <li><a id="range" style="width:65%" class="text-center"></a></li>
                         <li>
                             <a id="rangeNext" style="cursor:pointer;" aria-label="Next">
                                 <span aria-hidden="true">&raquo;</span>
                             </a>
                         </li>
                     </ul>
+
+                    <div id="datePicker" class="row hide">
+                        <div style="margin: 20px 0;" class="clearfix">
+                            <div class="col-lg-6">
+                                <div class="input-group">
+                                    <input id="begDate" type="text" class="form-control datepicker" name="dateString" placeholder="Date">
+                                    <span class="input-group-addon calander"><i class="glyphicon glyphicon-calendar"></i></span>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="input-group">
+                                    <input id="endDate" type="text" class="form-control datepicker" name="dateString" placeholder="Date">
+                                    <span class="input-group-addon calander"><i class="glyphicon glyphicon-calendar"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
             <div class="row">
@@ -102,49 +120,51 @@
                         </div>
                         <div class="panel-body">
                             {{ if .transactions }}
-                                <table id="transactions" class="table table-bordered table-hover" width="100%">
-                                    <thead>
-                                        <tr id="search">
-                                            <th>date</th>
-                                            <th>title</th>
-                                            <th>expense</th>
-                                            <th>income</th>
-                                            <th>who</th>
-                                            <th>category</th>
-                                            <th>secondaryCategory</th>
-                                        </tr>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Title</th>
-                                            <th>Expense</th>
-                                            <th>Income</th>
-                                            <th>Who</th>
-                                            <th>Category</th>
-                                            <th>Secondary Category</th>
-                                        </tr>
-                                    </thead>
-                                    <tfoot>
-                                        <tr>
-                                            <th colspan="2"></th>
-                                            <th class="text-right"></th>
-                                            <th class="text-right"></th>
-                                            <th colspan="3"></th>
-                                        </tr>
-                                    </tfoot>
-                                    <tbody>
-                                        {{ range $transaction := .transactions }}
-                                            <tr class="clickable" data-transaction="{{ toBase64Json $transaction }}">
-                                                <td>{{ PrettyDate $transaction.Date }}</td>
-                                                <td>{{ $transaction.Title }}</td>
-                                                <td class="text-right">{{ if isIncome $transaction.Ammount | not }}{{ printf "$%.2f" $transaction.Ammount }}{{ end }}</td>
-                                                <td class="text-right">{{ if isIncome $transaction.Ammount }}{{ printf "$%.2f" $transaction.Ammount }}{{ end }}</td>
-                                                <td>{{ Title $transaction.Who }}</td>
-                                                <td>{{ Title $transaction.Category }}</td>
-                                                <td>{{ Title $transaction.SecondaryCategory }}</td>
+                                <div class="table-responsive">
+                                    <table id="transactions" class="table table-bordered table-hover" width="100%">
+                                        <thead>
+                                            <tr id="search">
+                                                <th>date</th>
+                                                <th>title</th>
+                                                <th>expense</th>
+                                                <th>income</th>
+                                                <th>who</th>
+                                                <th>category</th>
+                                                <th>secondaryCategory</th>
                                             </tr>
-                                        {{ end }}
-                                    </tbody>
-                                </table>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Title</th>
+                                                <th>Expense</th>
+                                                <th>Income</th>
+                                                <th>Who</th>
+                                                <th>Category</th>
+                                                <th>Secondary Category</th>
+                                            </tr>
+                                        </thead>
+                                        <tfoot>
+                                            <tr>
+                                                <th colspan="2"></th>
+                                                <th class="text-right"></th>
+                                                <th class="text-right"></th>
+                                                <th colspan="3"></th>
+                                            </tr>
+                                        </tfoot>
+                                        <tbody>
+                                            {{ range $transaction := .transactions }}
+                                                <tr class="clickable" data-transaction="{{ toBase64Json $transaction }}">
+                                                    <td>{{ PrettyDate $transaction.Date }}</td>
+                                                    <td>{{ $transaction.Title }}</td>
+                                                    <td class="text-right">{{ if isIncome $transaction.Ammount | not }}{{ printf "$%.2f" $transaction.Ammount }}{{ end }}</td>
+                                                    <td class="text-right">{{ if isIncome $transaction.Ammount }}{{ printf "$%.2f" $transaction.Ammount }}{{ end }}</td>
+                                                    <td>{{ Title $transaction.Who }}</td>
+                                                    <td>{{ Title $transaction.Category }}</td>
+                                                    <td>{{ Title $transaction.SecondaryCategory }}</td>
+                                                </tr>
+                                            {{ end }}
+                                        </tbody>
+                                    </table>
+                                </div>
                             {{ else }}
                                 No recent transactions
                             {{ end }}
@@ -161,63 +181,131 @@
         {{ template "session.tmpl" . }}
 
         <script src="//cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js" charset="utf-8"></script>
-        <script src="/static/js/datatables-bootstrap.js" charset="utf-8"></script>
+        <script src="//cdn.datatables.net/1.10.13/js/dataTables.bootstrap.min.js" charset="utf-8"></script>
         <script src="/static/js/datatables-custom.js" charset="utf-8"></script>
 
         {{ template "addTransaction.tmpl" . }}
 
         <script type="text/javascript">
 
-            var today = new Date();
-            var beg = new Date(today.getFullYear(), today.getMonth(), 1);
-            var end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-            $('a#range').html(beg.toLocaleString({}, { month: "long" }) + ' ' + beg.getFullYear());
+
+            var today = new Date();
+            var range = 1;
+            var beg = new Date(today.getFullYear(), today.getMonth(), 1);
+            var end = new Date(today.getFullYear(), today.getMonth() + range, 0);
+            displayRange();
+
+            function logRange() {
+                console.log(beg);
+                console.log(end);
+                console.log(' ');
+            }
 
             $('a#reset').click(function() {
                 beg = new Date(today.getFullYear(), today.getMonth(), 1);
                 end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                $('a#range').html(beg.toLocaleString({}, { month: "long" }) + ' ' + beg.getFullYear());
+                $('select#rangeType').val('1month');
+                displayRange();
                 table.draw();
             });
 
             $('a#rangePrev').click(function() {
-
-                var month = beg.getMonth();
-                var year = beg.getFullYear();
-                end = new Date(year, month, 0);
-                month--;
-                if (month < 0) {
-                    month = 11;
-                    year--;
+                if ($('select#rangeType').val() == 'year') {
+                    beg.setFullYear(end.getFullYear() - 1, 0, 1);
+                    end.setFullYear(end.getFullYear() - 1, 12, 0);
+                } else {
+                    beg.setMonth(beg.getMonth() - 1);
+                    end = new Date(beg.getFullYear(), beg.getMonth() + range, 0);
                 }
-                beg = new Date(year, month, 1);
-                $('a#range').html(beg.toLocaleString({}, { month: "long" }) + ' ' + year);
+                displayRange();
                 table.draw();
+
             });
 
             $('a#rangeNext').click(function() {
-                month = beg.getMonth();
-                year = beg.getFullYear();
-
-                month++;
-                if (month > 11) {
-                    month = 0;
-                    year++;
+                if ($('select#rangeType').val() == 'year') {
+                    beg.setFullYear(end.getFullYear() + 1, 0, 1);
+                    end.setFullYear(end.getFullYear() + 1, 12, 0);
+                } else {
+                    beg.setMonth(beg.getMonth() + 1);
+                    end = new Date(beg.getFullYear(), beg.getMonth() + range, 0);
                 }
 
-                beg = new Date(year, month, 1);
+                displayRange();
+                table.draw();
+            });
 
-                month++;
-                if (month > 11) {
-                    month = 0;
-                    year++;
+            function displayRange() {
+                logRange();
+                var rangeType = $('select#rangeType').val();
+                if (rangeType === '1month') {
+                    $('a#range').html(beg.toLocaleString({}, { month: "long" }) + ' ' + beg.getFullYear());
+                    return;
                 }
+                if (rangeType === '3month' || rangeType === '6month') {
+                    $('a#range').html(
+                        beg.toLocaleString({}, { month: "long" }) + ' ' + beg.getFullYear() +
+                        ' - ' +
+                        end.toLocaleString({}, { month: "long" }) + ' ' + end.getFullYear()
+                    );
+                    return
+                }
+                if (rangeType === 'year') {
+                    $('a#range').html(beg.getFullYear());
+                }
+            }
 
-                end = new Date(year, month, 0);
+            $('#begDate').change(function() {
+                beg = $(this).datepicker('getDate');
+                table.draw();
+                logRange();
+            });
 
-                $('a#range').html(beg.toLocaleString({}, { month: "long" }) + ' ' + year);
+            $('#endDate').change(function() {
+                end = $(this).datepicker('getDate');
+                table.draw();
+                logRange();
+            });
 
+            $('select#rangeType').change(function() {
+                var rangeType = $(this).val();
+                switch (rangeType) {
+                    case '1month':
+                        beg.setFullYear(end.getFullYear());
+                        beg.setMonth(end.getMonth());
+                        range = 1;
+                        $('#datePicker').addClass('hide');
+                        $('#dateRange').removeClass('hide');
+                        break;
+                    case '3month':
+                        beg.setFullYear(end.getFullYear());
+                        beg.setMonth(end.getMonth() - 2);
+                        range = 3;
+                        $('#datePicker').addClass('hide');
+                        $('#dateRange').removeClass('hide');
+                        break;
+                    case '6month':
+                        beg.setFullYear(end.getFullYear());
+                        beg.setMonth(end.getMonth() - 5);
+                        range = 6;
+                        $('#datePicker').addClass('hide');
+                        $('#dateRange').removeClass('hide');
+                        break;
+                    case 'year':
+                        beg.setFullYear(end.getFullYear(), 0, 1);
+                        end.setFullYear(end.getFullYear(), 12, 0);
+                        $('#datePicker').addClass('hide');
+                        $('#dateRange').removeClass('hide');
+                        range = 12;
+                        break;
+                    case 'pick':
+                        $('#dateRange').addClass('hide');
+                        $('#datePicker').removeClass('hide');
+                        $('#begDate').datepicker('update', beg);
+                        $('#endDate').datepicker('update', end);
+                }
+                displayRange();
                 table.draw();
             });
 
