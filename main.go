@@ -45,7 +45,7 @@ func init() {
 
 func main() {
 	fmt.Println(">>> DID YOU REMEMBER TO REGISTER ANY NEW ROUTES? <<<")
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	log.Fatal(http.ListenAndServe(":9090", mux))
 }
 
 var home = web.Route{"GET", "/", func(w http.ResponseWriter, r *http.Request) {
