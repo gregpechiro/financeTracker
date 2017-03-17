@@ -7,6 +7,21 @@
         <link rel="stylesheet" href="/static/css/datatables-custom.css">
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker3.min.css">
 
+        <style media="screen">
+        .pagination>li>div {
+            position: relative;
+            padding: 6px 12px;
+            margin-left: -1px;
+            line-height: 1.42857143;
+            color: #337ab7;
+            text-decoration: none;
+            background-color: #fff;
+            border-top: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+            border-bottom: 1px solid #ddd;
+        }
+        </style>
+
         <title>Transactions</title>
 
     </head>
@@ -73,7 +88,7 @@
             <div class="row">
                 <div class="col-lg-5">
 
-                    <ul id="dateRange" class="pagination" style="width:100%; border:1px solid black">
+                    <ul id="dateRange" class="pagination" style="width:100%;">
                         <li>
                             <a id="rangePrev" style="cursor:pointer;" aria-label="Previous">
                                 <span aria-hidden="true">&laquo;</span>
@@ -84,11 +99,16 @@
                                 <i class="fa fa-refresh"></i>
                             </a>
                         </li>
-                        <li><a id="range" style="width:65%" class="text-center"></a></li>
-                        <li>
-                            <a id="rangeNext" style="cursor:pointer;" aria-label="Next">
+                        <li class="pull-right">
+                            <a id="rangeNext" style="cursor:pointer;border-top-right-radius: 4px;border-bottom-right-radius: 4px;" aria-label="Next">
                                 <span aria-hidden="true">&raquo;</span>
                             </a>
+                        </li>
+
+                        <li>
+                            <div style="overflow:hidden" class="text-center">
+                                 <a id="range" style="width:100%;"></a>
+                            </div>
                         </li>
                     </ul>
 
@@ -311,6 +331,9 @@
 
             var category2 = [];
 
+            $('select#category1').change(function() {
+                category2 = [];
+            });
 
             $.fn.dataTable.ext.search.push(
                 function( settings, data, dataIndex ) {

@@ -76,7 +76,7 @@
                         <div class="panel-body">
                             <div class="list-group">
                                 {{ range $person, $v := .user.People }}
-                                    <li class="list-group-item">{{ Title $person }}<button class="btn btn-danger btn-xs pull-right confirm-action" data-message="Are you sure you would like to delete this person?" data-color="#ff0000" data-url="/who/{{ $person }}/del" data-type="warning">Delete</button></li>
+                                    <a class="list-group-item who" style="cursor:pointer;" data-who="{{ Title $person }}">{{ Title $person }}<button class="btn btn-danger btn-xs pull-right confirm-action" data-message="Are you sure you would like to delete this person?" data-color="#ff0000" data-url="/who/{{ $person }}/del" data-type="warning">Delete</button></a>
                                 {{ end }}
                             </div>
                         </div>
@@ -91,10 +91,55 @@
                         <div class="panel-body">
                             <div class="list-group">
                                 {{ range $category, $v := .user.Categories }}
-                                    <li class="list-group-item">{{ Title $category }}<button class="btn btn-danger btn-xs pull-right confirm-action" data-message="Are you sure you would like to delete this category?" data-color="#ff0000" data-url="/category/{{ $category }}/del" data-type="warning">Delete</button></li>
+                                    <a class="list-group-item category" style="cursor:pointer;" data-category="{{ Title $category }}">{{ Title $category }}<button class="btn btn-danger btn-xs pull-right confirm-action" data-message="Are you sure you would like to delete this category?" data-color="#ff0000" data-url="/category/{{ $category }}/del" data-type="warning">Delete</button></a>
                                 {{ end }}
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="modal fade" id="categoryModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-sm" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Edit Category</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form class="" action="/category" method="post">
+                            <label>Name</label>
+                            <div class="form-group">
+                                <input id="newCategory" type="text" name="newCategory" class="form-control">
+                            </div>
+                            <input id="oldCategory" type="hidden" name="oldCategory" >
+
+                            <button class="btn btn-primary btn-block">Save</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="whoModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-sm" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Edit Who</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form class="" action="/who" method="post">
+                            <label>Name</label>
+                            <div class="form-group">
+                                <input id="newWho" type="text" name="newWho" class="form-control">
+                            </div>
+                            <input id="oldWho" type="hidden" name="oldWho" >
+
+                            <button class="btn btn-primary btn-block">Save</button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -111,6 +156,30 @@
                 $('form#delete-form').attr('action', btn.attr('data-url'));
                 $('form#delete-form').submit();
             }
+
+            $('a.category').click(function() {
+                var cat = $(this).attr('data-category');
+                $('input#newCategory').val(cat);
+                $('input#oldCategory').val(cat);
+                $('#categoryModal').modal('show');
+            });
+
+            $('#categoryModal').on('hidden.bs.modal', function () {
+                $('input#newCategory').val('');
+                $('input#oldCategory').val('');
+            });
+
+            $('a.who').click(function() {
+                var who = $(this).attr('data-who');
+                $('input#oldWho').val(who);
+                $('input#newWho').val(who);
+                $('#whoModal').modal('show');
+            });
+
+            $('#whoModal').on('hidden.bs.modal', function () {
+                $('input#oldWho').val('');
+                $('input#newWho').val('');
+            });
         </script>
 
     </body>

@@ -202,8 +202,8 @@ var whoSave = web.Route{"POST", "/who", func(w http.ResponseWriter, r *http.Requ
 		web.SetErrorRedirect(w, r, "/login", "Error retrieving user")
 		return
 	}
-	oldWho := NormalIzeString(r.FormValue("oldwho"))
-	newWho := NormalIzeString(r.FormValue("newwho"))
+	oldWho := NormalIzeString(r.FormValue("oldWho"))
+	newWho := NormalIzeString(r.FormValue("newWho"))
 
 	if _, ok := user.People[oldWho]; !ok {
 		web.SetErrorRedirect(w, r, "/account", "Error finding Who")

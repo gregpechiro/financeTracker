@@ -20,9 +20,9 @@ Confirm.prototype = {
 	},
 	registerDisplay: function() {
 
-		$(document).on('click', '.confirm-action', function(e) {
+		$('.confirm-action').click(function(e) {
             e.stopPropagation();
-            var btn = $(this);
+			var btn = $(this);
             swal({
                 title: '',
                 text: btn.attr('data-message'),
