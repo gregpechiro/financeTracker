@@ -27,3 +27,5 @@ financeTracker
 db/
 .tern-project
 .floo
+.flooignore
+financeTracker.tar

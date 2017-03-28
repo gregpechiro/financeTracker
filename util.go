@@ -36,6 +36,14 @@ func PrettyDate(ts int64) string {
 	return t.Format("1/2/2006")
 }
 
+func PrettyDateTime(ts int64) string {
+	if ts == 0 {
+		return ""
+	}
+	t := time.Unix(ts, 0)
+	return t.Format("1/2/2006 3:04 PM")
+}
+
 func isIncome(ammount float32) bool {
 	return ammount > float32(0)
 }
@@ -64,4 +72,22 @@ func toBase64Json(v interface{}) string {
 		return ""
 	}
 	return base64.StdEncoding.EncodeToString(b)
+}
+
+func defaultUsers() {
+	admin := User{
+		Id:        "0",
+		Role:      "ADMIN",
+		FirstName: "Admin",
+		LastName:  "Temporary",
+		Email:     "admin@temp.com",
+		Password:  "admin",
+		Active:    true,
+		Created:   time.Now().Unix(),
+		LastSeen:  time.Now().Unix(),
+	}
+
+	db.Set("user", "0", admin)
+
+	fmt.Printf("\nTemporary admin credentials:\n\n\tEmail:\t\t%s\n\tPassword:\t%s\n\n", admin.Email, admin.Password)
 }

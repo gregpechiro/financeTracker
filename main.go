@@ -24,6 +24,7 @@ func init() {
 
 	//session timeout length
 	web.SESSDUR = 15 * time.Minute
+	web.AMANAGER = true
 	mux = web.NewMux()
 
 	//unsecured routes
@@ -33,9 +34,13 @@ func init() {
 	mux.AddSecureRoutes(USER, dashboard, account, accountSave, categorySave, categoryDel, whoSave, whoDel)
 	mux.AddSecureRoutes(USER, transaction, transactionSave, quickTransaction, quickTransacitonSave)
 
+	// admin routes
+	mux.AddSecureRoutes(ADMIN, adminUsers, adminUser, adminUserSave)
+
 	web.Funcs["OrderCategories"] = OrderCategories
 	web.Funcs["Title"] = strings.Title
 	web.Funcs["PrettyDate"] = PrettyDate
+	web.Funcs["PrettyDateTime"] = PrettyDateTime
 	web.Funcs["isIncome"] = isIncome
 	web.Funcs["toJson"] = toJson
 	web.Funcs["toBase64Json"] = toBase64Json
@@ -44,6 +49,7 @@ func init() {
 }
 
 func main() {
+	defaultUsers()
 	fmt.Println(">>> DID YOU REMEMBER TO REGISTER ANY NEW ROUTES? <<<")
 	log.Fatal(http.ListenAndServe(":9090", mux))
 }

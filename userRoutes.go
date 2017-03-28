@@ -71,7 +71,7 @@ var accountSave = web.Route{"POST", "/account", func(w http.ResponseWriter, r *h
 	if r.FormValue("password") == "" {
 		r.Form.Set("password", user.Password)
 	}
-	web.FormToStruct(&user, r.Form, "")
+	web.FormToStruct(&user, r.Form, "account")
 
 	if errs, ok := web.FormToStruct(&user, r.Form, "account"); !ok {
 		web.SetFormErrors(w, errs)

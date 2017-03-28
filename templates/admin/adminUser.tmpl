@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {{ template "head.tmpl" . }}
+        <link rel="stylesheet" href="//cdn.datatables.net/1.10.13/css/dataTables.bootstrap.min.css">
+        <link rel="stylesheet" href="/static/css/datatables-custom.css">
+        <title>Account</title>
+
+    </head>
+    <body>
+
+        {{ template "navbar.tmpl" . }}
+
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-4 col-xl-3">
+                    <div class="panel panel-default">
+                        <div class="panel-heading clearfix">
+                            User
+                            <a href="/admin/user" class="btn btn-xs btn-default pull-right">Cancel</a>
+                        </div>
+                        <div class="panel-body">
+                            <form class="form-horizontal" action="/admin/user" method="post">
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">First Name</label>
+                                    <div class="col-xs-8">
+                                        <span class="text-danger">{{ getFormError .formErrors "adminUser.firstName" }}</span>
+                                        <input class="form-control" type="text" name="firstName" value="{{ .user.FirstName }}">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">Last Name</label>
+                                    <div class="col-xs-8">
+                                        <span class="text-danger">{{ getFormError .formErrors "adminUser.lastName" }}</span>
+                                        <input class="form-control" type="text" name="lastName" value="{{ .user.LastName }}">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">Email</label>
+                                    <div class="col-xs-8">
+                                        <span class="text-danger">{{ getFormError .formErrors "adminUser.email" }}</span>
+                                        <input class="form-control" type="email" name="email" value="{{ .user.Email }}">
+                                    </div>
+                                </div>
+                                <!-- toggle show password input -->
+								<div class="form-group">
+									<label class="control-label col-xs-4">Password</label>
+									<div class="col-xs-8">
+                                        <span class="text-danger">{{ getFormError .formErrors "adminUser.password" }}</span>
+                                        <span class="text-danger capsWarn hide">Caps Lock is On</span>
+										<div class="input-group">
+											<input type="password" id="password" name="password" class="form-control toggle-pass" placeholder="Password"/>
+											<span class="input-group-btn">
+												<button type="button" class="btn btn-default toggle-pass" data-toggle="tooltip" data-placement="right" title="Click to show/hide your password">
+													<i class="fa fa-eye-slash"></i>
+												</button>
+											</span>
+										</div>
+                                        {{ if .user.Id }}*Leave blank to keep current password{{ end }}
+									</div>
+								</div>
+								<!-- toggle show password input -->
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">Role</label>
+                                    <div class="col-xs-8">
+                                        <select class="form-control" name="role">
+                                            <option {{ if eq .user.Role "USER" }}selected{{ end }} value="USER">User</option>
+                                            <option {{ if eq .user.Role "ADMIN" }}selected{{ end }} value="ADMIN">Admin</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">Active</label>
+                                    <div class="col-xs-8">
+                                        <label class="radio-inline">
+                                            <input type="radio" name="active" value="true" {{ if .user.Active }}checked{{ end }}> Yes
+                                        </label>
+                                        <label class="radio-inline">
+                                            <input type="radio" name="active" value="false" {{ if not .user.Active }}checked{{ end }}> No
+                                        </label>
+                                    </div>
+                                </div>
+                                {{ if .user.Id }}
+                                    <input type="hidden" name="id" value="{{ .user.Id }}">
+                                {{ end }}
+                                <button class="btn btn-success btn-block">Save</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-8 col-xl-9">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            Users
+                        </div>
+                        <div class="panel-body">
+                            <table id="users" class="table table-bordered table-hover" width="100%">
+                                <thead>
+                                    <tr id="search">
+                                        <th>firstName</th>
+                                        <th>lastName</th>
+                                        <th>email</th>
+                                        <th>active</th>
+                                        <th>role</th>
+                                        <th>created</th>
+                                        <th>lastSeen</th>
+                                    </tr>
+                                    <tr>
+                                        <th>First Name</th>
+                                        <th>Last Name</th>
+                                        <th>Email</th>
+                                        <th>Active</th>
+                                        <th>Role</th>
+                                        <th>Created</th>
+                                        <th>Last Seen</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{ range $user := .users}}
+                                        <tr class="clickable" data-url="/admin/user/{{ $user.Id }}">
+                                            <td>{{ $user.FirstName  }}</td>
+                                            <td>{{ $user.LastName  }}</td>
+                                            <td>{{ $user.Email  }}</td>
+                                            <td>{{ $user.Active  }}</td>
+                                            <td>{{ $user.Role  }}</td>
+                                            <td>{{ PrettyDateTime $user.Created  }}</td>
+                                            <td>{{ PrettyDateTime $user.LastSeen  }}</td>
+                                        </tr>
+                                    {{ end }}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+         <form id="delete-form" class="hide" action="" method="post"></form>
+
+        {{ template "scripts.tmpl" . }}
+
+        {{ template "session.tmpl" . }}
+
+        <script src="//cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js" charset="utf-8"></script>
+        <script src="//cdn.datatables.net/1.10.13/js/dataTables.bootstrap.min.js" charset="utf-8"></script>
+        <script src="/static/js/datatables-custom.js" charset="utf-8"></script>
+
+        <script src="/static/js/toggle-password.js" charset="utf-8"></script>
+        <script src="/static/js/caps.js" charset="utf-8"></script>
+
+        <script type="text/javascript">
+            var table = $('#users').DataTable({
+                "lengthMenu":[10,15,20],
+                "columnDefs": [
+                    { "name": "firstName",  "targets": 0 },
+                    { "name": "lastName",   "targets": 1 },
+                    { "name": "email",      "targets": 2 },
+                    { "name": "active",     "targets": 3 },
+                    { "name": "role",       "targets": 4 },
+                    { "name": "created",    "targets": 5 },
+                    { "name": "lastSeen",   "targets": 6 }
+                ]
+            });
+        </script>
+    </body>
+</html>
