@@ -190,6 +190,8 @@
 </div>
 
 <script type="text/javascript">
+    var transaction;
+
     var quickTransactions = {{ if .quickTransactions }}{{ toJson .quickTransactions }}{{ else }}[]{{ end }}
 
     $('.datepicker').datepicker({
@@ -230,8 +232,14 @@
 
     $('select#quickTransaction').change(function() {
         if ($(this).val() == '') {
-            resetTransaction();
-            return
+            if (transaction == null) {
+                resetTransaction();
+                return;
+            }
+            $('form#quickTransactionForm').addClass('hide');
+            $('form#transactionForm').removeClass('hide');
+            editTransaction();
+            return;
         }
         var idx =+ $(this).val();
         var quickTransaction = quickTransactions[idx];
@@ -241,7 +249,15 @@
         $('form#quickTransactionForm input#description').val(quickTransaction.description);
         $('form#quickTransactionForm div#description').html(quickTransaction.description);
 
-        $('form#quickTransactionForm input#ammount').val(Math.abs(quickTransaction.ammount));
+        $('form#quickTransactionForm input#ammount').val(
+            $('form#transactionForm input#ammount').val() != '' ?
+            $('form#transactionForm input#ammount').val() :
+            Math.abs(quickTransaction.ammount)
+        )
+
+        if ($("form#transactionForm input#date").val() !== '') {
+            $("form#quickTransactionForm input#date").datepicker('update', new Date($("form#transactionForm input#date").val()));
+        }
 
         $('form#quickTransactionForm input#who').val(quickTransaction.who);
         $('form#quickTransactionForm div#who').html(toTitleCase(quickTransaction.who));
@@ -256,8 +272,10 @@
 
         if (quickTransaction.ammount < 0) {
             $('form#quickTransactionForm .income').addClass('hide');
+            $('form#quickTransactionForm .expense').removeClass('hide');
         } else {
             $('form#quickTransactionForm .expense').addClass('hide');
+            $('form#quickTransactionForm .income').removeClass('hide');
         }
 
         $('form#quickTransactionForm').removeClass('hide');
@@ -279,39 +297,46 @@
         $("form#transactionForm input#date").datepicker("update", new Date());
 
         $('select#quickTransaction').val('');
+        transaction = null;
     }
 
     $('#transactionModal').on('hidden.bs.modal', function() {
         resetTransaction();
     });
 
-    TRCLICK = editTransaction;
+    TRCLICK = parseTransaction;
 
-    function editTransaction(tr) {
+    function parseTransaction(tr) {
         try {
            transaction = JSON.parse(atob($(tr).attr('data-transaction')));
         } catch(err) {
             swal({
                 title: 'Error',
-                text: 'Error transaction note. Please refresh the page and try again',
+                text: 'Error getting transaction. Please refresh the page and try again',
                 type: 'warning',
                 showConfirmButton: false
             });
             return
         }
+
         var qIdx = quickTransactions.map(function(e) { return e.id; }).indexOf(transaction.quickTransactionId);
+        $('form#quickTransactionForm input#id').val(transaction.id);
+        $('form#transactionForm input#id').val(transaction.id);
         if (qIdx > -1) {
             $('select#quickTransaction').val(qIdx);
             $('select#quickTransaction').change();
 
             $('form#quickTransactionForm input#ammount').val(Math.abs(transaction.ammount));
             $("form#quickTransactionForm input#date").datepicker("update", new Date(transaction.date * 1000));
-            $('form#quickTransactionForm input#id').val(transaction.id)
             $('#transactionModal').modal('show');
             return
 
         }
 
+        editTransaction();
+    }
+
+    function editTransaction() {
         $('form#transactionForm input#title').val(transaction.title);
         $('form#transactionForm input#description').val(transaction.description);
         $('form#transactionForm input#ammount').val(Math.abs(transaction.ammount));
@@ -326,10 +351,7 @@
         $('form#transactionForm input#secondaryCategory').val(transaction.secondaryCategory);
         $('form#transactionForm select#secondaryCategory').val(transaction.secondaryCategory);
 
-        $('form#transactionForm input#id').val(transaction.id)
-
         $('#transactionModal').modal('show');
-
     }
 
 </script>

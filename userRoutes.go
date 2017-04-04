@@ -395,6 +395,19 @@ var transactionSave = web.Route{"POST", "/transaction", func(w http.ResponseWrit
 	web.SetSuccessRedirect(w, r, redirect, "Transaction Saved")
 	return
 }}
+var transactionDel = web.Route{"POST", "/transaction/del/:id", func(w http.ResponseWriter, r *http.Request) {
+	id := web.GetId(r)
+	var user User
+	if !db.Get("user", id, &user) {
+		web.Logout(w)
+		web.SetErrorRedirect(w, r, "/transaction", "Error retrieving user")
+		return
+	}
+
+	db.Del("transaction", r.FormValue(":id"))
+	web.SetSuccessRedirect(w, r, "/transaction", "Successfully deleted transaction")
+	return
+}}
 
 var quickTransaction = web.Route{"GET", "/quickTransaction", func(w http.ResponseWriter, r *http.Request) {
 	id := web.GetId(r)

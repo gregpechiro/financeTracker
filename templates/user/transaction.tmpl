@@ -8,18 +8,18 @@
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker3.min.css">
 
         <style media="screen">
-        .pagination>li>div {
-            position: relative;
-            padding: 6px 12px;
-            margin-left: -1px;
-            line-height: 1.42857143;
-            color: #337ab7;
-            text-decoration: none;
-            background-color: #fff;
-            border-top: 1px solid #ddd;
-            border-right: 1px solid #ddd;
-            border-bottom: 1px solid #ddd;
-        }
+            .pagination>li>div {
+                position: relative;
+                padding: 6px 12px;
+                margin-left: -1px;
+                line-height: 1.42857143;
+                color: #337ab7;
+                text-decoration: none;
+                background-color: #fff;
+                border-top: 1px solid #ddd;
+                border-right: 1px solid #ddd;
+                border-bottom: 1px solid #ddd;
+            }
         </style>
 
         <title>Transactions</title>
@@ -29,9 +29,11 @@
 
         {{ template "navbar.tmpl" . }}
 
-        <div class="container">
+        {{ template "size.tmpl" }}
+
+        <div class="container-fluid">
             <div class="row">
-                <div class="col-lg-12">
+                <div class="col-md-12">
                     <div>
                         <ul class="nav nav-tabs" role="tablist">
                             <li class="active"><a href="">Transactions</a></li>
@@ -42,17 +44,17 @@
             </div>
             <br>
             <div class="row">
-                <div class="col-lg-2 col-xl-2">
+                <div class="col-md-2 col-xl-2">
                     <label>Time</label>
                     <select id="rangeType" class="form-control" name="time">
-                        <option value="1month" selected>One Month</option>
-                        <option value="3month">3 Months</option>
-                        <option value="6month">6 Months</option>
+                        <option value="1" selected>One Month</option>
+                        <option value="3">3 Months</option>
+                        <option value="6">6 Months</option>
                         <option value="year">Year</option>
                         <option value="pick">Pick Dates</option>
                     </select>
                 </div>
-                <div class="col-lg-2 col-xl-2">
+                <div class="col-md-2 col-xl-2">
                     <label>Ammount Type</label>
                     <select id="aType-filter" class="form-control filter" name="aType">
                         <option value="">All</option>
@@ -60,7 +62,7 @@
                         <option value="expense">Expense</option>
                     </select>
                 </div>
-                <div class="col-lg-offset-1 col-xl-offset-1 col-lg-2 col-xl-2">
+                <div class="col-md-2 col-xl-2">
                     <label>Who</label>
                     <select id="who" class="form-control filter" name="who">
                         <option value="">All</option>
@@ -69,7 +71,7 @@
                         {{ end }}
                     </select>
                 </div>
-                <div class="col-lg-offset-1 col-xl-offset-1 col-lg-2 col-xl-2">
+                <div class="col-md-2 col-xl-2">
                     <label>Category 1</label>
                     <select id="category1" class="form-control filter" name="category1">
                         <option value="">All</option>
@@ -78,16 +80,21 @@
                         {{ end }}
                     </select>
                 </div>
-                <div class="col-lg-2 col-xl-2">
+                <div class="col-md-2 col-xl-2">
                     <label>Category 2</label>
                     <select id="category2" class="form-control filter" name="category2">
                         <option value=""></option>
                     </select>
                 </div>
+                <div class="col-md-2">
+                    <label>Reset</label>
+                    <button id="resetAll" class="btn btn-primary btn-block">
+                        <i class="fa fa-refresh"></i>
+                    </button>
+                </div>
             </div>
             <div class="row">
-                <div class="col-lg-5">
-
+                <div class="col-md-5">
                     <ul id="dateRange" class="pagination" style="width:100%;">
                         <li>
                             <a id="rangePrev" style="cursor:pointer;" aria-label="Previous">
@@ -114,13 +121,13 @@
 
                     <div id="datePicker" class="row hide">
                         <div style="margin: 20px 0;" class="clearfix">
-                            <div class="col-lg-6">
+                            <div class="col-md-6">
                                 <div class="input-group">
                                     <input id="begDate" type="text" class="form-control datepicker" name="dateString" placeholder="Date">
                                     <span class="input-group-addon calander"><i class="glyphicon glyphicon-calendar"></i></span>
                                 </div>
                             </div>
-                            <div class="col-lg-6">
+                            <div class="col-md-6">
                                 <div class="input-group">
                                     <input id="endDate" type="text" class="form-control datepicker" name="dateString" placeholder="Date">
                                     <span class="input-group-addon calander"><i class="glyphicon glyphicon-calendar"></i></span>
@@ -132,7 +139,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-lg-12 col-xl-12">
+                <div class="col-md-12 col-xl-12">
                     <div class="panel panel-default">
                         <div class="panel-heading clearfix">
                             All Transactions
@@ -151,6 +158,7 @@
                                                 <th>who</th>
                                                 <th>category</th>
                                                 <th>secondaryCategory</th>
+                                                <th></th>
                                             </tr>
                                             <tr>
                                                 <th>Date</th>
@@ -160,6 +168,7 @@
                                                 <th>Who</th>
                                                 <th>Category</th>
                                                 <th>Secondary Category</th>
+                                                <th></th>
                                             </tr>
                                         </thead>
                                         <tfoot>
@@ -167,7 +176,7 @@
                                                 <th colspan="2"></th>
                                                 <th class="text-right"></th>
                                                 <th class="text-right"></th>
-                                                <th colspan="3"></th>
+                                                <th colspan="4"></th>
                                             </tr>
                                         </tfoot>
                                         <tbody>
@@ -180,6 +189,7 @@
                                                     <td>{{ Title $transaction.Who }}</td>
                                                     <td>{{ Title $transaction.Category }}</td>
                                                     <td>{{ Title $transaction.SecondaryCategory }}</td>
+                                                    <td><a class="confirm-action text-danger" data-message="Are you sure you would like to permanently delete this transaction?" data-color="#ff0000" data-url="/transaction/del/{{ $transaction.Id }}" data-type="warning">Delete</a></td>
                                                 </tr>
                                             {{ end }}
                                         </tbody>
@@ -194,6 +204,7 @@
             </div>
         </div>
 
+        <form id="delete-form" class="hide" action="" method="post"></form>
 
         {{ template "scripts.tmpl" . }}
         <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.min.js" charset="utf-8"></script>
@@ -205,334 +216,14 @@
         <script src="/static/js/datatables-custom.js" charset="utf-8"></script>
 
         {{ template "addTransaction.tmpl" . }}
+        <script src="/static/js/transaction.js" charset="utf-8"></script>
+        <script src="/static/js/confirm.js" charset="utf-8"></script>
 
         <script type="text/javascript">
-
-
-
-            var today = new Date();
-            var range = 1;
-            var beg = new Date(today.getFullYear(), today.getMonth(), 1);
-            var end = new Date(today.getFullYear(), today.getMonth() + range, 0);
-            displayRange();
-
-            function logRange() {
-                console.log(beg);
-                console.log(end);
-                console.log(' ');
-            }
-
-            $('a#reset').click(function() {
-                beg = new Date(today.getFullYear(), today.getMonth(), 1);
-                end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                $('select#rangeType').val('1month');
-                displayRange();
-                table.draw();
-            });
-
-            $('a#rangePrev').click(function() {
-                if ($('select#rangeType').val() == 'year') {
-                    beg.setFullYear(end.getFullYear() - 1, 0, 1);
-                    end.setFullYear(end.getFullYear() - 1, 12, 0);
-                } else {
-                    beg.setMonth(beg.getMonth() - 1);
-                    end = new Date(beg.getFullYear(), beg.getMonth() + range, 0);
-                }
-                displayRange();
-                table.draw();
-
-            });
-
-            $('a#rangeNext').click(function() {
-                if ($('select#rangeType').val() == 'year') {
-                    beg.setFullYear(end.getFullYear() + 1, 0, 1);
-                    end.setFullYear(end.getFullYear() + 1, 12, 0);
-                } else {
-                    beg.setMonth(beg.getMonth() + 1);
-                    end = new Date(beg.getFullYear(), beg.getMonth() + range, 0);
-                }
-
-                displayRange();
-                table.draw();
-            });
-
-            function displayRange() {
-                logRange();
-                var rangeType = $('select#rangeType').val();
-                if (rangeType === '1month') {
-                    $('a#range').html(beg.toLocaleString({}, { month: "long" }) + ' ' + beg.getFullYear());
-                    return;
-                }
-                if (rangeType === '3month' || rangeType === '6month') {
-                    $('a#range').html(
-                        beg.toLocaleString({}, { month: "long" }) + ' ' + beg.getFullYear() +
-                        ' - ' +
-                        end.toLocaleString({}, { month: "long" }) + ' ' + end.getFullYear()
-                    );
-                    return
-                }
-                if (rangeType === 'year') {
-                    $('a#range').html(beg.getFullYear());
-                }
-            }
-
-            $('#begDate').change(function() {
-                beg = $(this).datepicker('getDate');
-                table.draw();
-                logRange();
-            });
-
-            $('#endDate').change(function() {
-                end = $(this).datepicker('getDate');
-                table.draw();
-                logRange();
-            });
-
-            $('select#rangeType').change(function() {
-                var rangeType = $(this).val();
-                switch (rangeType) {
-                    case '1month':
-                        beg.setFullYear(end.getFullYear());
-                        beg.setMonth(end.getMonth());
-                        range = 1;
-                        $('#datePicker').addClass('hide');
-                        $('#dateRange').removeClass('hide');
-                        break;
-                    case '3month':
-                        beg.setFullYear(end.getFullYear());
-                        beg.setMonth(end.getMonth() - 2);
-                        range = 3;
-                        $('#datePicker').addClass('hide');
-                        $('#dateRange').removeClass('hide');
-                        break;
-                    case '6month':
-                        beg.setFullYear(end.getFullYear());
-                        beg.setMonth(end.getMonth() - 5);
-                        range = 6;
-                        $('#datePicker').addClass('hide');
-                        $('#dateRange').removeClass('hide');
-                        break;
-                    case 'year':
-                        beg.setFullYear(end.getFullYear(), 0, 1);
-                        end.setFullYear(end.getFullYear(), 12, 0);
-                        $('#datePicker').addClass('hide');
-                        $('#dateRange').removeClass('hide');
-                        range = 12;
-                        break;
-                    case 'pick':
-                        $('#dateRange').addClass('hide');
-                        $('#datePicker').removeClass('hide');
-                        $('#begDate').datepicker('update', beg);
-                        $('#endDate').datepicker('update', end);
-                }
-                displayRange();
-                table.draw();
-            });
-
-            var category2 = [];
-
-            $('select#category1').change(function() {
-                category2 = [];
-            });
-
-            $.fn.dataTable.ext.search.push(
-                function( settings, data, dataIndex ) {
-
-                    var date = new Date(data[0]);
-                    if (date == 'Invalid Date') {
-                        return false;
-                    }
-                    return (beg <= date && date <= end);
-                }
-            );
-
-            $.fn.dataTable.ext.search.push(
-                function( settings, data, dataIndex ) {
-
-                    var aType = $('select#aType-filter').val();
-
-                    if (aType == 'expense') {
-                        var v = intVal(data[2])
-                        if (v < 0) {
-                            return true;
-                        }
-                        return false;
-                    }
-
-                    if (aType == 'income') {
-                        var v = intVal(data[3]);
-                        if (v > 0) {
-                            return true;
-                        }
-                        return false;
-                    }
-
-                    return true;
-                }
-            );
-
-            $.fn.dataTable.ext.search.push(
-                function( settings, data, dataIndex ) {
-
-                    var category = $('select#category1').val();
-                    if (category == '') {
-                        return true;
-                    }
-
-                    if (data[5] == category) {
-                        if (data[6] != '') {
-                            category2.push(data[6]);
-                        }
-                        return true;
-                    }
-                    if (data[6] == category) {
-                        if (data[5] != '') {
-                            category2.push(data[5]);
-                        }
-                        return true
-                    }
-                    return false;
-                }
-            );
-
-            $.fn.dataTable.ext.search.push(
-                function( settings, data, dataIndex ) {
-
-                    var category = $('select#category2').val();
-                    if (category == '') {
-                        return true;
-                    }
-
-                    if (data[5] == category) {
-                        return true;
-                    }
-                    if (data[6] == category) {
-                        return true
-                    }
-                    return false;
-                }
-            );
-
-            $.fn.dataTable.ext.search.push(
-                function( settings, data, dataIndex ) {
-
-                    var who = $('select#who').val();
-                    if (who == '') {
-                        return true;
-                    }
-
-                    if (data[4] == who) {
-                        return true;
-                    }
-                    return false;
-                }
-            );
-
-
-            $('select.filter').change(function() {
-                table.draw()
-            });
-
-            var table = $('#transactions').DataTable({
-                "lengthMenu":[5, 10,15,20],
-                "pageLength": 5,
-                "order": [[ 0, "desc" ]],
-                "columnDefs": [
-                    { "name": "date", "type":"date", "targets": 0 },
-                    { "name": "title",               "targets": 1 },
-                    { "name": "expense",             "targets": 2 },
-                    { "name": "income",              "targets": 3 },
-                    { "name": "who",                 "targets": 4 },
-                    { "name": "category",            "targets": 5 },
-                    { "name": "secondaryCategory",   "targets": 6 }
-                ],
-                "footerCallback": function ( row, data, start, end, display ) {
-                    api = this.api(), data;
-
-                    expenseTotal = api
-                        .column(2, {search: 'applied'})
-                        .data()
-                        .reduce( function (a, b) {
-                            return intVal(a) + intVal(b);
-                        }, 0 );
-
-                    // Total over this page
-                    expenseSubTotal = api
-                        .column(2, {page: 'current'})
-                        .data()
-                        .reduce(function(a, b) {
-                            return intVal(a) + intVal(b);
-                        }, 0);
-
-                    // Update footer
-                    $(api.column(2).footer()).html(
-                        ((api.page.info().pages > 1) ?
-                            ((expenseSubTotal < 0) ? '<span class="pull-left">Sub Total: </span>'+currencyFormatter.format(expenseSubTotal) : '') +
-                            '<br>'
-                            : '') +
-
-                        ((expenseTotal < 0) ? '<span class="pull-left">Total: </span>'+currencyFormatter.format(expenseTotal) : '')
-                    );
-
-                    incomeTotal = api
-                        .column(3, {search: 'applied'})
-                        .data()
-                        .reduce( function (a, b) {
-                            return intVal(a) + intVal(b);
-                        }, 0 );
-
-                    // Total over this page
-                    incomeSubTotal = api
-                        .column(3, {page: 'current'})
-                        .data()
-                        .reduce(function(a, b) {
-                            return intVal(a) + intVal(b);
-                        }, 0);
-
-                    // Update footer
-                    $(api.column(3).footer()).html(
-                        ((api.page.info().pages > 1) ?
-                            ((incomeSubTotal > 0) ? '<span class="pull-left">Sub Total: </span>'+currencyFormatter.format(incomeSubTotal) : '') +
-                            '<br>'
-                            : '') +
-
-                        ((incomeTotal > 0) ? '<span class="pull-left">Total: </span>'+currencyFormatter.format(incomeTotal) : '')
-                    );
-                }
-            });
-
-            table.on('search.dt', function() {
-                if ($('select#category2').val() !== '') {
-                    return;
-                }
-
-                if ($('select#category1').val() !== '') {
-                    $.uniqueSort(category2).sort();
-                } else {
-                    category2 = [];
-                }
-                renderCategory2();
-            });
-
-            function intVal(i) {
-                return typeof i === 'string' ?
-                i.replace(/[\$,]/g, '')*1 :
-                typeof i === 'number' ?
-                i : 0;
-            };
-
-            function renderCategory2() {
-                if ($('select#category1').val() == '') {
-                    $('select#category2').html('<option></option>');
-                    return;
-                }
-                var options = '<option value="">All</option>';
-                for (var i = 0; i < category2.length; i++) {
-                    options += '<option value="' + category2[i] + '">' + category2[i] + '</option>';
-                }
-                $('select#category2').html(options);
-            }
-
+        confirm.yes = function(btn) {
+            $('form#delete-form').attr('action', btn.attr('data-url'));
+            $('form#delete-form').submit();
+        }
         </script>
 
 
