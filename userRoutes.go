@@ -6,6 +6,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/Shaked/mobiledetect"
 	"github.com/cagnosolutions/adb"
 	"github.com/cagnosolutions/web"
 )
@@ -37,7 +38,14 @@ var dashboard = web.Route{"GET", "/dashboard", func(w http.ResponseWriter, r *ht
 		return quickTransactions[i].Title > quickTransactions[j].Title
 	})
 
-	tmpl.Render(w, r, "dashboard.tmpl", web.Model{
+	detect := mobiledetect.NewMobileDetect(r, nil)
+	page := "dashboard.tmpl"
+
+	if detect.IsMobile() {
+		page = "mobileDashboard.tmpl"
+	}
+
+	tmpl.Render(w, r, page, web.Model{
 		"user":              user,
 		"transactions":      transactions,
 		"quickTransactions": quickTransactions,
@@ -306,10 +314,13 @@ var transaction = web.Route{"GET", "/transaction", func(w http.ResponseWriter, r
 
 var transactionSave = web.Route{"POST", "/transaction", func(w http.ResponseWriter, r *http.Request) {
 
-	redirect := "/dashboard"
-	rUrl, err := url.Parse(r.Referer())
-	if err == nil {
-		redirect = rUrl.Path
+	redirect := r.FormValue("redirect")
+	if redirect == "" {
+		redirect = "/dashboard"
+		rUrl, err := url.Parse(r.Referer())
+		if err == nil {
+			redirect = rUrl.Path
+		}
 	}
 
 	id := web.GetId(r)

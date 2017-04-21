@@ -34,6 +34,9 @@ func init() {
 	mux.AddSecureRoutes(USER, dashboard, account, accountSave, categorySave, categoryDel, whoSave, whoDel)
 	mux.AddSecureRoutes(USER, transaction, transactionSave, transactionDel, quickTransaction, quickTransacitonSave)
 
+	// mobile routes
+	mux.AddSecure(USER, addTransaction)
+
 	// admin routes
 	mux.AddSecureRoutes(ADMIN, adminUsers, adminUser, adminUserSave)
 
