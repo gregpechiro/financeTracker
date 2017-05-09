@@ -25,7 +25,7 @@ type Transaction struct {
 	Date               int64   `json:"date,omitempty"`
 	Title              string  `json:"title,omitempty" required:"transaction"`
 	Description        string  `json:"description,omitempty"`
-	Ammount            float32 `json:"ammount,omitempty" required:"transaction"`
+	Ammount            float32 `json:"ammount" required:"transaction"`
 	Who                string  `json:"who,omitempty"`
 	Category           string  `json:"category,omitempty"`
 	SecondaryCategory  string  `json:"secondaryCategory,omitempty"`

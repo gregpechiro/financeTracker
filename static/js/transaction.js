@@ -326,6 +326,7 @@ table.on('search.dt', function() {
 
 	if ($('select#category1').val() !== '') {
 		$.uniqueSort(category2).sort();
+		$.uniqueSort(category2).sort();
 	} else {
 		category2 = [];
 	}

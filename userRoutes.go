@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"sort"
@@ -35,7 +36,7 @@ var dashboard = web.Route{"GET", "/dashboard", func(w http.ResponseWriter, r *ht
 	db.TestQuery("quickTransaction", &quickTransactions, adb.Eq("accountId", `"`+user.AccountId+`"`))
 
 	sort.Slice(quickTransactions, func(i int, j int) bool {
-		return quickTransactions[i].Title > quickTransactions[j].Title
+		return quickTransactions[i].Title < quickTransactions[j].Title
 	})
 
 	detect := mobiledetect.NewMobileDetect(r, nil)
@@ -300,7 +301,7 @@ var transaction = web.Route{"GET", "/transaction", func(w http.ResponseWriter, r
 	db.TestQuery("quickTransaction", &quickTransactions, adb.Eq("accountId", `"`+user.AccountId+`"`))
 
 	sort.Slice(quickTransactions, func(i int, j int) bool {
-		return quickTransactions[i].Title > quickTransactions[j].Title
+		return quickTransactions[i].Title < quickTransactions[j].Title
 	})
 
 	tmpl.Render(w, r, "transaction.tmpl", web.Model{
@@ -406,6 +407,7 @@ var transactionSave = web.Route{"POST", "/transaction", func(w http.ResponseWrit
 	web.SetSuccessRedirect(w, r, redirect, "Transaction Saved")
 	return
 }}
+
 var transactionDel = web.Route{"POST", "/transaction/del/:id", func(w http.ResponseWriter, r *http.Request) {
 	id := web.GetId(r)
 	var user User
@@ -458,6 +460,7 @@ var quickTransacitonSave = web.Route{"POST", "/quickTransaction", func(w http.Re
 	r.ParseForm()
 	if errs, ok := web.FormToStruct(&quickTransaction, r.Form, ""); !ok {
 		web.SetFormErrors(w, errs)
+		fmt.Println(errs)
 		web.SetErrorRedirect(w, r, "/quickTransaction", "Error saving quick quickTransaction")
 		return
 	}
@@ -465,7 +468,7 @@ var quickTransacitonSave = web.Route{"POST", "/quickTransaction", func(w http.Re
 	var quickTransactions []Transaction
 	db.TestQuery("quickTransaction", &quickTransactions, adb.Eq("title", quickTransaction.Title), adb.Ne("id", `"`+quickTransaction.Id+`"`))
 	if len(quickTransactions) > 0 {
-		web.SetErrorRedirect(w, r, "/quickTransaction", "Failed to save quick quickTransaction<br>A quick quickTransaction already exists with that title")
+		web.SetErrorRedirect(w, r, "/quickTransaction", "Failed to save quick quickTransaction<br>A quick Transaction already exists with that title")
 		return
 	}
 

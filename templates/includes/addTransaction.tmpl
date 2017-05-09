@@ -270,7 +270,7 @@
 
         $('form#quickTransactionForm input#quickTransactionId').val(quickTransaction.id);
 
-        if (quickTransaction.ammount < 0) {
+        if (quickTransaction.ammount < 1) {
             $('form#quickTransactionForm .income').addClass('hide');
             $('form#quickTransactionForm .expense').removeClass('hide');
         } else {
