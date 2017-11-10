@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -18,12 +19,14 @@ var loginPost = web.Route{"POST", "/login", func(w http.ResponseWriter, r *http.
 	//parses form and throws it into a variable
 	r.ParseForm()
 	if errs, ok := web.FormToStruct(&user, r.Form, "login"); !ok {
+		fmt.Println(errs)
 		web.SetFormErrors(w, errs)
 		web.SetErrorRedirect(w, r, "/login", "Error Loging In")
 		return
 	}
 
 	if !db.Auth("user", user.Email, user.Password, &user) {
+		fmt.Println(">>> ", user.Email, user.Password)
 		web.SetErrorRedirect(w, r, "/login", "Incorrect email or password")
 		return
 	}
